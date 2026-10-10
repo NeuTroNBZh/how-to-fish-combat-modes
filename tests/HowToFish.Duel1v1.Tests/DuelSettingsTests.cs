@@ -102,4 +102,18 @@ public class DuelSettingsTests
     {
         Assert.True(DuelSettings.FromRaw(DuelSettings.Defaults, out _).IslandRotation);
     }
+
+    [Fact]
+    public void Defaults_RandomizeUpgrades()
+    {
+        Assert.True(DuelSettings.FromRaw(DuelSettings.Defaults, out _).RandomUpgrades);
+    }
+
+    [Fact]
+    public void DefaultKits_IncludeKnifeOnlyRound()
+    {
+        var kits = DuelSettings.FromRaw(DuelSettings.Defaults, out _).Kits;
+
+        Assert.Contains(kits, k => k.Items.Count == 1 && k.Items[0] == "knife");
+    }
 }

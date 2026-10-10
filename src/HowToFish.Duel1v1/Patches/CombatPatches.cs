@@ -9,6 +9,13 @@ internal static class BlockDamageOutsideFightPatch
     private static bool Prefix() => !DuelSession.BlocksDamage;
 }
 
+// Les accessoires tirés au hasard ne doivent pas débloquer le succès « tous les accessoires ».
+[HarmonyPatch(typeof(AchievementManager), nameof(AchievementManager.CheckAttachmentsAchievement))]
+internal static class NoAttachmentAchievementInDuelPatch
+{
+    private static bool Prefix() => !DuelSession.IsDuelLobby;
+}
+
 [HarmonyPatch(typeof(PlayerDying), nameof(PlayerDying.ServerDie))]
 internal static class DetectDuelDeathPatch
 {

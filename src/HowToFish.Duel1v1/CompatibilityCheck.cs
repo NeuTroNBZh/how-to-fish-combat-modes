@@ -21,11 +21,16 @@ internal static class CompatibilityCheck
         (typeof(OnlineIslandManager), "TpToSpecificIsland"), (typeof(GameInfo), "GetSpawnable"),
         (typeof(Item), "SetSyncedHolder"), (typeof(Item), "DestroyItem"),
         (typeof(ServerSettings), "ToggleFriendlyFire"), (typeof(PlayerCamera), "ToggleMouse"),
+        (typeof(AchievementManager), "CheckAttachmentsAchievement"),
     };
 
     private static readonly (Type Type, string Name)[] Fields =
     {
         (typeof(PlayerDying), "_player"), (typeof(PlayerInventory), "_items"),
+        (typeof(Attachments), "_sights"), (typeof(Attachments), "_barrelAttachments"),
+        (typeof(Attachments), "_bulletUpgrades"), (typeof(Attachments), "_quiverUpgrades"),
+        (typeof(Attachments), "_extendedMagInfo"), (typeof(Attachments), "_laserSight"),
+        (typeof(Melee), "_sharpnessUpgrades"),
     };
 
     public static bool Run(ManualLogSource log)

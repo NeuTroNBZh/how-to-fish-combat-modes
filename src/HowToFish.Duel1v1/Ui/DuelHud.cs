@@ -10,7 +10,10 @@ internal sealed class DuelHud : MonoBehaviour
 {
     private const float ReferenceHeight = 1080f;
     private bool _cursorFreed;
-    private GUIStyle? _top, _big, _banner;
+    private const float LoadoutRefreshInterval = 0.5f;
+    private float _nextLoadoutRefresh;
+    private string _loadout = "";
+    private GUIStyle? _top, _big, _banner, _small;
 
     private void OnGUI()
     {
@@ -33,10 +36,34 @@ internal sealed class DuelHud : MonoBehaviour
 
     private void Update()
     {
+        TrackPhase();
         bool matchEnd = DuelSession.IsDuelLobby && DuelSession.Display?.Phase == DuelPhase.MatchEnd;
         if (matchEnd == _cursorFreed) return;
         _cursorFreed = matchEnd;
         PlayerCamera.ToggleMouse(matchEnd);
+    }
+
+    // Les accessoires arrivent par SyncVar après les armes : pendant le compte à rebours on relit
+    // régulièrement et on remplit le chargeur (étendu ou non) pour partir plein.
+    private void TrackPhase()
+    {
+        var phase = DuelSession.IsDuelLobby ? DuelSession.Display?.Phase : null;
+        if (phase is not (DuelPhase.Countdown or DuelPhase.Fighting) || Player.LocalPlayer == null)
+        {
+            _loadout = "";
+            return;
+        }
+        if (Time.time < _nextLoadoutRefresh) return;
+        _nextLoadoutRefresh = Time.time + LoadoutRefreshInterval;
+        try
+        {
+            if (phase == DuelPhase.Countdown) WeaponUpgrades.RefillLocalAmmo(Player.LocalPlayer);
+            _loadout = WeaponUpgrades.Describe(Player.LocalPlayer);
+        }
+        catch (System.Exception ex)
+        {
+            DuelPlugin.Log.LogError($"Lecture des accessoires impossible : {ex}");
+        }
     }
 
     private static double Remaining(WireState s) => s.RemainingMs / 1000.0 - (Time.time - DuelSession.DisplayReceivedAt);
@@ -49,6 +76,7 @@ internal sealed class DuelHud : MonoBehaviour
         GUI.Label(new Rect(width / 2 - 260, 25, 520, 45), line, _top);
         var info = $"Manche {s.Round} · {HudFormatter.Clock(Remaining(s))} · Kit : {s.KitName}";
         GUI.Label(new Rect(width / 2 - 260, 65, 520, 40), info, _top);
+        if (_loadout.Length > 0) GUI.Label(new Rect(0, 115, width, 40), _loadout, _small);
     }
 
     private void DrawCenter(WireState s, float width)
@@ -99,5 +127,6 @@ internal sealed class DuelHud : MonoBehaviour
         _top = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontSize = 28, fontStyle = FontStyle.Bold };
         _big = new GUIStyle(_top) { fontSize = 140 };
         _banner = new GUIStyle(_top) { fontSize = 60 };
+        _small = new GUIStyle(_top) { fontSize = 20, fontStyle = FontStyle.Normal };
     }
 }

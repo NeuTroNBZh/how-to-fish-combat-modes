@@ -6,12 +6,12 @@ namespace HowToFish.Duel1v1.Core;
 
 public sealed record RawDuelSettings(
     int RoundsToWin, int RoundTimeSeconds, int CountdownSeconds, float ArenaRadius,
-    int IslandIndex, string Kits, string SpawnA, string SpawnB, bool DebugSolo, bool IslandRotation);
+    int IslandIndex, string Kits, string SpawnA, string SpawnB, bool DebugSolo, bool IslandRotation, bool RandomUpgrades);
 
 public sealed record DuelSettings(
     int RoundsToWin, int RoundTimeSeconds, int CountdownSeconds, float ArenaRadius,
     int IslandIndex, IReadOnlyList<Kit> Kits, Vector3? SpawnA, Vector3? SpawnB, bool DebugSolo,
-    bool IslandRotation, IReadOnlyList<int> Islands)
+    bool IslandRotation, IReadOnlyList<int> Islands, bool RandomUpgrades)
 {
     public const double PrepareSeconds = 1.0;
     public const double RoundEndSeconds = 3.0;
@@ -20,11 +20,11 @@ public sealed record DuelSettings(
     public const double HelloTimeoutSeconds = 5.0;
 
     // Valeurs issues de docs/prototype-findings.md
-    public const string DefaultKits = "pistol+knife;shotgun+knife;smg+knife;assaultrifle+knife;sniperrifle+pistol;bow+knife";
+    public const string DefaultKits = "pistol+knife;shotgun+knife;smg+knife;assaultrifle+knife;sniperrifle+pistol;bow+knife;knife";
     public const int DefaultIslandIndex = 0;
 
     public static RawDuelSettings Defaults { get; } =
-        new(5, 90, 3, 60f, DefaultIslandIndex, DefaultKits, "", "", false, true);
+        new(5, 90, 3, 60f, DefaultIslandIndex, DefaultKits, "", "", false, true, true);
 
     public DuelSettings WithKits(IReadOnlyList<Kit> kits) => this with { Kits = kits };
 
@@ -44,7 +44,8 @@ public sealed record DuelSettings(
             ParseSpawn(nameof(raw.SpawnB), raw.SpawnB, w),
             raw.DebugSolo,
             raw.IslandRotation,
-            new[] { island });
+            new[] { island },
+            raw.RandomUpgrades);
         warnings = w;
         return settings;
     }

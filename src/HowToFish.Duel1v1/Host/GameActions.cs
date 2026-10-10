@@ -51,7 +51,8 @@ internal static class GameActions
         foreach (var item in items.Where(i => i != null && !i.IsDestroying)) item.DestroyItem();
     }
 
-    public static (IReadOnlyList<Item> Given, IReadOnlyList<string> Missing) GiveKit(Player p, Kit kit)
+    public static (IReadOnlyList<Item> Given, IReadOnlyList<string> Missing) GiveKit(
+        Player p, Kit kit, System.Action<string, Item> afterSpawn)
     {
         var given = new List<Item>();
         var missing = new List<string>();
@@ -70,6 +71,14 @@ internal static class GameActions
             p.Inventory._items[slot] = item;
             given.Add(item);
             slot++;
+            try
+            {
+                afterSpawn(name, item);
+            }
+            catch (System.Exception ex)
+            {
+                DuelPlugin.Log.LogError($"Accessoires de {name} non appliqués, arme nue : {ex}");
+            }
         }
         return (given, missing);
     }
