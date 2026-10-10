@@ -1,3 +1,6 @@
+using System.Collections;
+using System.Collections.Generic;
+using HowToFish.Duel1v1.Core;
 using Steamworks;
 using UnityEngine;
 
@@ -11,8 +14,12 @@ internal sealed class DuelLobby : MonoBehaviour
     public const string VersionKey = "htf_duel_ver";
     private const string GameVersionKey = "version";
     private const float HelloInterval = 2f;
+    private const float RescanInterval = 5f;
+    private const float MergeJoinDelay = 1f;
 
     private float _nextHello;
+    private float _nextRescan;
+    private CSteamID _quickMatchLobby = CSteamID.Nil;
 
     public static DuelLobby? Instance { get; private set; }
 
@@ -47,6 +54,11 @@ internal sealed class DuelLobby : MonoBehaviour
     public void StartQuickMatch()
     {
         DuelSession.SetSearching(true);
+        RequestOpenDuels();
+    }
+
+    private void RequestOpenDuels()
+    {
         SteamMatchmaking.AddRequestLobbyListStringFilter(TagKey, TagValue, ELobbyComparison.k_ELobbyComparisonEqual);
         SteamMatchmaking.AddRequestLobbyListStringFilter(VersionKey, DuelPlugin.PluginVersion, ELobbyComparison.k_ELobbyComparisonEqual);
         SteamMatchmaking.AddRequestLobbyListStringFilter(GameVersionKey, Application.version, ELobbyComparison.k_ELobbyComparisonEqual);
@@ -68,6 +80,7 @@ internal sealed class DuelLobby : MonoBehaviour
         SteamMatchmaking.SetLobbyData(lobby, VersionKey, DuelPlugin.PluginVersion);
         SteamMatchmaking.SetLobbyMemberLimit(lobby, MaxMembers);
         DuelSession.EnterDuelLobby(lobby, isHost: true);
+        if (Instance != null) Instance._quickMatchLobby = isPublic ? lobby : CSteamID.Nil;
         if (!isPublic) SteamFriends.ActivateGameOverlayInviteDialog(lobby);
         DuelPlugin.Log.LogInfo($"Lobby duel {lobby.m_SteamID} prêt");
     }
@@ -86,6 +99,11 @@ internal sealed class DuelLobby : MonoBehaviour
 
     private void OnLobbyList(LobbyMatchList_t result, bool ioFailure)
     {
+        if (IsWaitingAloneInQuickMatch())
+        {
+            if (!ioFailure) TryMerge(result);
+            return;
+        }
         if (!DuelSession.IsSearching) return;
         if (ioFailure || result.m_nLobbiesMatching == 0)
         {
@@ -98,15 +116,47 @@ internal sealed class DuelLobby : MonoBehaviour
         SteamManager.JoinLobby(lobby.m_SteamID);
     }
 
+    private bool IsWaitingAloneInQuickMatch() =>
+        DuelSession.IsHostingDuel
+        && DuelSession.LobbyId == _quickMatchLobby
+        && DuelSession.Snapshot.Phase == DuelPhase.Waiting
+        && SteamMatchmaking.GetNumLobbyMembers(DuelSession.LobbyId) < MaxMembers;
+
+    private void TryMerge(LobbyMatchList_t result)
+    {
+        var open = new List<ulong>();
+        for (int i = 0; i < result.m_nLobbiesMatching; i++) open.Add(SteamMatchmaking.GetLobbyByIndex(i).m_SteamID);
+        if (QuickMatchPolicy.MergeTarget(DuelSession.LobbyId.m_SteamID, open) is not ulong target) return;
+        DuelPlugin.Log.LogInfo($"Autre duel en attente trouvé ({target}), on le rejoint");
+        StartCoroutine(MoveTo(target));
+    }
+
+    private IEnumerator MoveTo(ulong lobby)
+    {
+        _quickMatchLobby = CSteamID.Nil;
+        SteamManager.LeaveLobby(DisconnectReason.None);
+        DuelSession.SetSearching(true);
+        yield return new WaitForSeconds(MergeJoinDelay);
+        SteamManager.JoinLobby(lobby);
+    }
+
     // Renvoi du HELLO tant que l'hôte n'a pas lancé le duel : un seul envoi peut arriver avant que l'hôte soit prêt.
     private void Update()
     {
+        RescanWhileAlone();
         if (!DuelSession.IsDuelLobby || DuelSession.IsHost) return;
         var display = DuelSession.Display;
         if (display != null && display.Phase != Core.DuelPhase.Waiting) return;
         if (Time.time < _nextHello) return;
         _nextHello = Time.time + HelloInterval;
         DuelChannel.Send(Core.DuelMessage.Hello());
+    }
+
+    private void RescanWhileAlone()
+    {
+        if (Time.time < _nextRescan || !IsWaitingAloneInQuickMatch()) return;
+        _nextRescan = Time.time + RescanInterval;
+        RequestOpenDuels();
     }
 
     private void OnLobbyEntered(LobbyEnter_t callback)

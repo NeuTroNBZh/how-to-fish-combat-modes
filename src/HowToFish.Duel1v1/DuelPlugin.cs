@@ -10,7 +10,7 @@ public sealed class DuelPlugin : BaseUnityPlugin
 {
     public const string PluginGuid = "htf.duel1v1";
     public const string PluginName = "Duel 1v1";
-    public const string PluginVersion = "1.1.0";
+    public const string PluginVersion = "1.1.1";
 
     internal static ManualLogSource Log { get; private set; } = null!;
     internal static GameObject Root { get; private set; } = null!;
