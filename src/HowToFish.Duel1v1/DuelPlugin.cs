@@ -30,6 +30,11 @@ public sealed class DuelPlugin : BaseUnityPlugin
         if (compatible) Root.AddComponent<Net.DuelLobby>();
         if (compatible) Root.AddComponent<Net.DuelChannel>();
         if (compatible) Root.AddComponent<Host.DuelHost>();
+        if (compatible)
+        {
+            Root.AddComponent<Ui.DuelHud>();
+            Root.AddComponent<Ui.DebugTools>();
+        }
         Log.LogInfo($"{PluginName} {PluginVersion} chargé (compatible={compatible}, kits={settings.Kits.Count})");
     }
 }
