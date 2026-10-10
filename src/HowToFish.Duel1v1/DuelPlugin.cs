@@ -26,14 +26,19 @@ public sealed class DuelPlugin : BaseUnityPlugin
         DontDestroyOnLoad(Root);
         Root.hideFlags = HideFlags.HideAndDontSave;
 
-        if (compatible) new Harmony(PluginGuid).PatchAll(typeof(DuelPlugin).Assembly);
-        if (compatible) Root.AddComponent<Net.DuelLobby>();
-        if (compatible) Root.AddComponent<Net.DuelChannel>();
-        if (compatible) Root.AddComponent<Host.DuelHost>();
+        var menu = Root.AddComponent<Ui.DuelMenu>();
         if (compatible)
         {
+            new Harmony(PluginGuid).PatchAll(typeof(DuelPlugin).Assembly);
+            Root.AddComponent<Net.DuelLobby>();
+            Root.AddComponent<Net.DuelChannel>();
+            Root.AddComponent<Host.DuelHost>();
             Root.AddComponent<Ui.DuelHud>();
             Root.AddComponent<Ui.DebugTools>();
+        }
+        else
+        {
+            menu.InjectButton();
         }
         Log.LogInfo($"{PluginName} {PluginVersion} chargé (compatible={compatible}, kits={settings.Kits.Count})");
     }
