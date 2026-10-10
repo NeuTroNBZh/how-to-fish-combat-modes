@@ -101,7 +101,7 @@ internal sealed class DuelLobby : MonoBehaviour
         bool isHost = SteamMatchmaking.GetLobbyOwner(lobby) == SteamUser.GetSteamID();
         if (isHost) return;
         DuelSession.EnterDuelLobby(lobby, isHost: false);
-        // DuelChannel.Send(Core.DuelMessage.Hello());
+        DuelChannel.Send(Core.DuelMessage.Hello());
     }
 
     private void OnMembersChanged(LobbyChatUpdate_t update)
