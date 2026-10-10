@@ -22,6 +22,20 @@ public class DuelSettingsTests
         Assert.False(settings.DebugSolo);
     }
 
+    [Fact]
+    public void DefaultKits_OnlyUseItemsThatExistInGame()
+    {
+        // Clés relevées dans GameInfo par le prototype (docs/prototype-findings.md)
+        var gameWeapons = new[]
+        {
+            "pistol", "shotgun", "smg", "assaultrifle", "sniperrifle", "bow", "knife", "brassknuckles", "dynamite",
+        };
+
+        var kits = KitParser.Parse(DuelSettings.DefaultKits, out _)!;
+
+        Assert.All(kits.SelectMany(k => k.Items), item => Assert.Contains(item, gameWeapons));
+    }
+
     [Theory]
     [InlineData(0)]
     [InlineData(16)]

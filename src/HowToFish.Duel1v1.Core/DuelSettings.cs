@@ -19,7 +19,7 @@ public sealed record DuelSettings(
     public const double HelloTimeoutSeconds = 5.0;
 
     // Valeurs issues de docs/prototype-findings.md
-    public const string DefaultKits = "pistol+knife;shotgun+knife;smg+knife;assaultrifle+knife;sniperrifle+pistol;bow+arrow+knife";
+    public const string DefaultKits = "pistol+knife;shotgun+knife;smg+knife;assaultrifle+knife;sniperrifle+pistol;bow+knife";
     public const int DefaultIslandIndex = 0;
 
     public static RawDuelSettings Defaults { get; } =

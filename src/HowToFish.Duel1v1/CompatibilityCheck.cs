@@ -10,7 +10,7 @@ internal static class CompatibilityCheck
     private static readonly (Type Type, string Name)[] Methods =
     {
         (typeof(Server), "TeleportPlayer"), (typeof(Server), "RespawnPlayer"),
-        (typeof(PlayerVitals), "TakeDamage"), (typeof(PlayerVitals), "ServerResetVitals"),
+        (typeof(PlayerVitals), "TakeDamage"), (typeof(PlayerVitals), "ServerResetVitals"), (typeof(PlayerVitals), "Heal"),
         (typeof(PlayerDying), "ServerDie"), (typeof(SteamManager), "CreateLobby"),
         (typeof(SteamManager), "OnLobbyCreated"), (typeof(SteamManager), "LeaveLobby"),
         (typeof(SteamManager), "JoinLobby"), (typeof(SaveManager), "LoadAllServers"),

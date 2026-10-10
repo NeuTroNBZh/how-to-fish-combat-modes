@@ -11,6 +11,7 @@ internal static class GameActions
 {
     private const float GroundProbeHeight = 100f;
     private const float GroundProbeDistance = 300f;
+    private const int MaxHealth = 100;
 
     public static bool ItemExists(string name) => GameInfo.GetSpawnable(name) != null;
 
@@ -19,6 +20,9 @@ internal static class GameActions
         if (p.Vitals.Health <= 0) Server.Instance.RespawnPlayer(p, p.Transform.position, Quaternion.identity);
         else p.Vitals.ServerResetVitals();
     }
+
+    // Pas pendant la préparation : le client détecte une réapparition quand la vie revient à la vie de départ (50).
+    public static void HealToFull(Player p) => p.Vitals.Heal(MaxHealth);
 
     public static void ClearInventory(Player p)
     {

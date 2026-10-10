@@ -146,6 +146,8 @@ internal sealed class DuelHost : MonoBehaviour
                 break;
             case DuelEffect.StartFight:
                 Guarded("tir allié", () => ServerSettings.Instance.ToggleFriendlyFire(true));
+                foreach (var (player, side) in Participants())
+                    Guarded($"soin {side}", () => GameActions.HealToFull(player));
                 break;
         }
     }
