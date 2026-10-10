@@ -7,9 +7,15 @@ namespace HowToFish.Duel1v1.Patches;
 [HarmonyPatch(typeof(SteamManager), nameof(SteamManager.CreateLobby))]
 internal static class CreateDuelLobbyPatch
 {
+    // Le nom de sauvegarde évite qu'un PendingLobbyType resté en plan transforme une partie normale en duel.
     private static bool Prefix()
     {
         if (DuelSession.PendingLobbyType is not ELobbyType type) return true;
+        if (SaveManager.CurServerSave?.Name != DuelSession.SaveName)
+        {
+            DuelSession.Reset();
+            return true;
+        }
         SteamMatchmaking.CreateLobby(type, DuelLobby.MaxMembers);
         return false;
     }
@@ -20,7 +26,14 @@ internal static class TagDuelLobbyPatch
 {
     private static void Postfix(LobbyCreated_t callback)
     {
-        if (DuelSession.PendingLobbyType is null || callback.m_eResult != EResult.k_EResultOK) return;
+        if (DuelSession.PendingLobbyType is null) return;
+        if (callback.m_eResult != EResult.k_EResultOK)
+        {
+            DuelPlugin.Log.LogError($"Création du lobby duel refusée par Steam : {callback.m_eResult}");
+            DuelSession.Reset();
+            DuelSession.ShowNotice("Steam a refusé la création du lobby duel", UnityEngine.Time.time);
+            return;
+        }
         DuelLobby.OnDuelLobbyCreated(new CSteamID(callback.m_ulSteamIDLobby));
     }
 }

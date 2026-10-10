@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using HowToFish.Duel1v1.Core;
 using HowToFish.Duel1v1.Net;
@@ -11,9 +12,12 @@ internal sealed class DuelHost : MonoBehaviour
 {
     private const int FullHealth = 100;
     private const float ZoneCheckInterval = 1f;
+    private const float PermanentNoticeSeconds = 3600f;
 
     public static DuelHost? Instance { get; private set; }
 
+    private readonly List<Item> _givenItems = new();
+    private CSteamID _lobby = CSteamID.Nil;
     private DuelRules? _rules;
     private (SpawnPoint A, SpawnPoint B) _spawns;
     private Vector3 _center;
@@ -21,7 +25,7 @@ internal sealed class DuelHost : MonoBehaviour
     private float _guestSeenAt = -1f;
     private float _nextBroadcast;
     private float _nextZoneCheck;
-    private bool _kitsChecked;
+    private bool _settingsChecked;
 
     private void Awake()
     {
@@ -33,12 +37,9 @@ internal sealed class DuelHost : MonoBehaviour
 
     private void Update()
     {
-        if (!DuelSession.IsHostingDuel || Player.LocalPlayer == null || Server.Instance == null)
-        {
-            ResetLocalState();
-            return;
-        }
-        if (!EnsureKits()) return;
+        if (DuelSession.LobbyId != _lobby) ResetForLobby(DuelSession.LobbyId);
+        if (!DuelSession.IsHostingDuel || Player.LocalPlayer == null || Server.Instance == null) return;
+        if (!EnsureSettings()) return;
         var guest = Guest();
         CheckHandshake(guest);
         DetectReadinessAndLeaves(guest);
@@ -57,27 +58,27 @@ internal sealed class DuelHost : MonoBehaviour
 
     private static Player? Guest() => PlayerManager.Players.FirstOrDefault(p => p != null && p != Player.LocalPlayer);
 
-    private void ResetLocalState()
+    // Le HELLO de l'invité peut arriver avant que le joueur de l'hôte existe : on ne l'efface qu'au changement de lobby.
+    private void ResetForLobby(CSteamID lobby)
     {
+        _lobby = lobby;
         _rules = null;
         _helloFrom = 0;
         _guestSeenAt = -1f;
-        _kitsChecked = false;
+        _settingsChecked = false;
+        _givenItems.Clear();
     }
 
-    private bool EnsureKits()
+    private bool EnsureSettings()
     {
-        if (_kitsChecked) return _rules != null;
-        _kitsChecked = true;
-        var kits = KitFilter.KeepAvailable(DuelSession.Settings.Kits, GameActions.ItemExists, out var missing);
-        foreach (var item in missing) DuelPlugin.Log.LogWarning($"Objet de kit inconnu, kit ignoré : {item}");
-        if (kits.Count == 0)
+        if (_settingsChecked) return _rules != null;
+        _settingsChecked = true;
+        if (!DuelPreflight.TryValidate(DuelSession.Settings, out var settings, out var error))
         {
-            DuelPlugin.Log.LogError("Aucun kit utilisable : vérifie 'Kits' dans htf.duel1v1.cfg");
-            DuelSession.ShowNotice("Aucun kit d'armes valide — duel impossible (voir le log)", Time.time);
+            SteamMatchmaking.SetLobbyJoinable(DuelSession.LobbyId, false);
+            DuelSession.ShowNotice($"{error} — duel impossible, retourne au menu", Time.time, PermanentNoticeSeconds);
             return false;
         }
-        var settings = DuelSession.Settings.WithKits(kits);
         DuelSession.UseSettings(settings);
         _rules = new DuelRules(settings, new SystemRandomSource(new System.Random()));
         return true;
@@ -134,6 +135,8 @@ internal sealed class DuelHost : MonoBehaviour
         var step = _rules.Apply(before, duelEvent, Time.time);
         DuelSession.Snapshot = step.Snapshot;
         Execute(step.Effect);
+        // Re-placement au début du compte à rebours : la résurrection côté client peut ramener le joueur à sa position de mort.
+        if (before.Phase == DuelPhase.Preparing && step.Snapshot.Phase == DuelPhase.Countdown) PlaceAll();
         if (step.Effect != DuelEffect.None || step.Snapshot.Phase != before.Phase) Broadcast();
     }
 
@@ -149,24 +152,46 @@ internal sealed class DuelHost : MonoBehaviour
                 foreach (var (player, side) in Participants())
                     Guarded($"soin {side}", () => GameActions.HealToFull(player));
                 break;
+            case DuelEffect.ResetToWaiting:
+                Guarded("nettoyage des armes", DestroyGivenItems);
+                Guarded("réanimation hôte", () => GameActions.Revive(Player.LocalPlayer));
+                break;
         }
     }
 
     private void PrepareRound()
     {
-        var snapshot = DuelSession.Snapshot;
+        Guarded("nettoyage des armes", DestroyGivenItems);
+        var kit = DuelSession.Snapshot.Kit!;
         foreach (var (player, side) in Participants())
         {
             Guarded($"réanimation {side}", () => GameActions.Revive(player));
             Guarded($"vidage {side}", () => GameActions.ClearInventory(player));
-            Guarded($"placement {side}", () => GameActions.Place(player, ArenaGeometry.For(side, snapshot.HostAtSpawnA, _spawns)));
-            Guarded($"kit {side}", () =>
-            {
-                foreach (var item in GameActions.GiveKit(player, snapshot.Kit!))
-                    DuelPlugin.Log.LogWarning($"Objet introuvable au moment du don : {item}");
-            });
+            Guarded($"placement {side}", () => GameActions.Place(player, SpawnFor(side)));
+            Guarded($"kit {side}", () => GiveKit(player, kit));
         }
     }
+
+    private void GiveKit(Player player, Kit kit)
+    {
+        var (given, missing) = GameActions.GiveKit(player, kit);
+        _givenItems.AddRange(given);
+        foreach (var item in missing) DuelPlugin.Log.LogWarning($"Objet introuvable au moment du don : {item}");
+    }
+
+    private void DestroyGivenItems()
+    {
+        GameActions.Destroy(_givenItems);
+        _givenItems.Clear();
+    }
+
+    private void PlaceAll()
+    {
+        foreach (var (player, side) in Participants())
+            Guarded($"placement {side}", () => GameActions.Place(player, SpawnFor(side)));
+    }
+
+    private SpawnPoint SpawnFor(Side side) => ArenaGeometry.For(side, DuelSession.Snapshot.HostAtSpawnA, _spawns);
 
     private void KeepPlayersInZone()
     {
@@ -179,8 +204,7 @@ internal sealed class DuelHost : MonoBehaviour
         {
             var position = GameActions.ToNumerics(player.Transform.position);
             if (!ArenaGeometry.IsOutside(position, center, DuelSession.Settings.ArenaRadius)) continue;
-            Guarded($"retour en zone {side}", () =>
-                GameActions.Place(player, ArenaGeometry.For(side, DuelSession.Snapshot.HostAtSpawnA, _spawns)));
+            Guarded($"retour en zone {side}", () => GameActions.Place(player, SpawnFor(side)));
         }
     }
 

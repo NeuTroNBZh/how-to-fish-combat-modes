@@ -21,6 +21,12 @@ public sealed class DuelRules
         _ => Same(snapshot),
     };
 
+    // La fenêtre après la fin de manche laisse passer le second coup d'une même explosion (double KO).
+    public static bool AllowsDamage(DuelSnapshot s, double now) =>
+        s.Phase == DuelPhase.Fighting
+        || (s.Phase == DuelPhase.RoundEnd && !s.LastRoundDraw
+            && now - s.RoundDecidedAt <= DuelSettings.DoubleKoWindowSeconds);
+
     private static DuelStep Same(DuelSnapshot s) => new(s, DuelEffect.None);
 
     private DuelStep StartMatch(double now)

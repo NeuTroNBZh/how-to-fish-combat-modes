@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Linq;
+using HowToFish.Duel1v1.Host;
 using HowToFish.Duel1v1.Net;
 using TMPro;
 using UnityEngine;
@@ -87,6 +88,8 @@ internal sealed class DuelMenu : MonoBehaviour
             DrawSearching();
         else
             DrawChoices();
+        if (Time.time <= DuelSession.NoticeUntil && DuelSession.Notice.Length > 0)
+            GUILayout.Label(DuelSession.Notice);
         GUILayout.FlexibleSpace();
         if (!DuelSession.IsSearching && GUILayout.Button("Retour", GUILayout.Height(40))) _panelOpen = false;
     }
@@ -110,6 +113,11 @@ internal sealed class DuelMenu : MonoBehaviour
         if (DuelLobby.Instance == null)
         {
             DuelPlugin.Log.LogError("DuelLobby absent");
+            return;
+        }
+        if (!DuelPreflight.TryValidate(DuelSession.Settings, out _, out var error))
+        {
+            DuelSession.ShowNotice(error, Time.time);
             return;
         }
         action(DuelLobby.Instance);

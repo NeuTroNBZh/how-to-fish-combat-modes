@@ -9,6 +9,10 @@ internal sealed class DuelLobby : MonoBehaviour
     public const string TagKey = "htf_duel";
     public const string TagValue = "1";
     public const string VersionKey = "htf_duel_ver";
+    private const string GameVersionKey = "version";
+    private const float HelloInterval = 2f;
+
+    private float _nextHello;
 
     public static DuelLobby? Instance { get; private set; }
 
@@ -45,6 +49,7 @@ internal sealed class DuelLobby : MonoBehaviour
         DuelSession.SetSearching(true);
         SteamMatchmaking.AddRequestLobbyListStringFilter(TagKey, TagValue, ELobbyComparison.k_ELobbyComparisonEqual);
         SteamMatchmaking.AddRequestLobbyListStringFilter(VersionKey, DuelPlugin.PluginVersion, ELobbyComparison.k_ELobbyComparisonEqual);
+        SteamMatchmaking.AddRequestLobbyListStringFilter(GameVersionKey, Application.version, ELobbyComparison.k_ELobbyComparisonEqual);
         SteamMatchmaking.AddRequestLobbyListFilterSlotsAvailable(1);
         SteamMatchmaking.AddRequestLobbyListDistanceFilter(ELobbyDistanceFilter.k_ELobbyDistanceFilterWorldwide);
         _lobbyList?.Set(SteamMatchmaking.RequestLobbyList());
@@ -93,15 +98,43 @@ internal sealed class DuelLobby : MonoBehaviour
         SteamManager.JoinLobby(lobby.m_SteamID);
     }
 
+    // Renvoi du HELLO tant que l'hôte n'a pas lancé le duel : un seul envoi peut arriver avant que l'hôte soit prêt.
+    private void Update()
+    {
+        if (!DuelSession.IsDuelLobby || DuelSession.IsHost) return;
+        var display = DuelSession.Display;
+        if (display != null && display.Phase != Core.DuelPhase.Waiting) return;
+        if (Time.time < _nextHello) return;
+        _nextHello = Time.time + HelloInterval;
+        DuelChannel.Send(Core.DuelMessage.Hello());
+    }
+
     private void OnLobbyEntered(LobbyEnter_t callback)
     {
-        if (callback.m_EChatRoomEnterResponse != 1) return;
+        if (callback.m_EChatRoomEnterResponse != 1)
+        {
+            EndSearch("Ce duel n'est plus disponible, relance une partie rapide");
+            return;
+        }
         var lobby = new CSteamID(callback.m_ulSteamIDLobby);
         if (SteamMatchmaking.GetLobbyData(lobby, TagKey) != TagValue) return;
+        if (SteamMatchmaking.GetLobbyData(lobby, GameVersionKey) != Application.version)
+        {
+            EndSearch("Ce duel utilise une autre version du jeu");
+            return;
+        }
         bool isHost = SteamMatchmaking.GetLobbyOwner(lobby) == SteamUser.GetSteamID();
         if (isHost) return;
         DuelSession.EnterDuelLobby(lobby, isHost: false);
-        DuelChannel.Send(Core.DuelMessage.Hello());
+        _nextHello = 0f;
+    }
+
+    private static void EndSearch(string notice)
+    {
+        if (!DuelSession.IsSearching) return;
+        DuelSession.SetSearching(false);
+        DuelSession.ShowNotice(notice, Time.time);
+        DuelPlugin.Log.LogWarning(notice);
     }
 
     private void OnMembersChanged(LobbyChatUpdate_t update)

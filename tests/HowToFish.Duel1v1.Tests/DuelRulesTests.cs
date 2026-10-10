@@ -226,6 +226,21 @@ public class DuelRulesTests
     }
 
     [Fact]
+    public void AllowsDamage_DuringFightAndDoubleKoWindowOnly()
+    {
+        var rules = Rules();
+        var fighting = Fighting(rules);
+        var roundEnd = rules.Apply(fighting, new PlayerDied(Side.Guest), 30).Snapshot;
+        var draw = rules.Apply(roundEnd, new PlayerDied(Side.Host), 30.5).Snapshot;
+
+        Assert.False(DuelRules.AllowsDamage(DuelSnapshot.Initial, 0));
+        Assert.True(DuelRules.AllowsDamage(fighting, 20));
+        Assert.True(DuelRules.AllowsDamage(roundEnd, 30.9));
+        Assert.False(DuelRules.AllowsDamage(roundEnd, 31.5));
+        Assert.False(DuelRules.AllowsDamage(draw, 30.6));
+    }
+
+    [Fact]
     public void Rematch_DuringFight_IsIgnored()
     {
         var rules = Rules();

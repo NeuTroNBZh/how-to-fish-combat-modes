@@ -22,7 +22,7 @@ internal static class DuelSession
     public static float NoticeUntil { get; private set; }
 
     public static bool IsHostingDuel => IsDuelLobby && IsHost;
-    public static bool BlocksDamage => IsHostingDuel && Snapshot.Phase != DuelPhase.Fighting;
+    public static bool BlocksDamage => IsHostingDuel && !DuelRules.AllowsDamage(Snapshot, UnityEngine.Time.time);
     public static Side LocalSide => IsHost ? Side.Host : Side.Guest;
 
     public static void Initialize(DuelSettings settings, string debugPositionKey, bool compatible)
@@ -55,10 +55,10 @@ internal static class DuelSession
         DisplayReceivedAt = receivedAt;
     }
 
-    public static void ShowNotice(string text, float now)
+    public static void ShowNotice(string text, float now, float seconds = 5f)
     {
         Notice = text;
-        NoticeUntil = now + 5f;
+        NoticeUntil = now + seconds;
     }
 
     public static void Reset()

@@ -12,13 +12,19 @@ internal static class GameActions
     private const float GroundProbeHeight = 100f;
     private const float GroundProbeDistance = 300f;
     private const int MaxHealth = 100;
+    private const byte CorpseDestroyReason = 7;
 
     public static bool ItemExists(string name) => GameInfo.GetSpawnable(name) != null;
 
+    public static bool IsMainIsland(int index) => index >= 0 && index <= byte.MaxValue && IslandManager.IsMainIsland((byte)index);
+
+    // Équivalent serveur de Server.RespawnPlayer sans son ServerDropAll : le RPC s'exécute au tick
+    // suivant et jetterait au sol le kit donné entre-temps.
     public static void Revive(Player p)
     {
-        if (p.Vitals.Health <= 0) Server.Instance.RespawnPlayer(p, p.Transform.position, Quaternion.identity);
-        else p.Vitals.ServerResetVitals();
+        var corpse = p.Dying.DeadPlayer;
+        if (corpse != null) corpse.DestroyItem(CorpseDestroyReason);
+        p.Vitals.ServerResetVitals();
     }
 
     // Pas pendant la préparation : le client détecte une réapparition quand la vie revient à la vie de départ (50).
@@ -37,8 +43,14 @@ internal static class GameActions
         if (held != null) held.DestroyItem();
     }
 
-    public static IReadOnlyList<string> GiveKit(Player p, Kit kit)
+    public static void Destroy(IEnumerable<Item> items)
     {
+        foreach (var item in items.Where(i => i != null && !i.IsDestroying)) item.DestroyItem();
+    }
+
+    public static (IReadOnlyList<Item> Given, IReadOnlyList<string> Missing) GiveKit(Player p, Kit kit)
+    {
+        var given = new List<Item>();
         var missing = new List<string>();
         byte slot = 0;
         foreach (var name in kit.Items)
@@ -53,9 +65,10 @@ internal static class GameActions
             item.SetSyncedHolder(p);
             InstanceFinder.ServerManager.Spawn(item.gameObject);
             p.Inventory._items[slot] = item;
+            given.Add(item);
             slot++;
         }
-        return missing;
+        return (given, missing);
     }
 
     public static void Place(Player p, SpawnPoint spawn) =>
@@ -63,9 +76,11 @@ internal static class GameActions
 
     public static bool EnsureIsland(int index)
     {
-        if (IslandManager.IsLoading) return false;
-        if (OnlineIslandManager.CurIsland == index) return true;
-        OnlineIslandManager.TpToSpecificIsland((byte)index);
+        if (IslandManager.IsLoading || OnlineIslandManager.TeleportPlayers) return false;
+        var island = Island.CurIsland;
+        if (OnlineIslandManager.CurIsland == index && island != null && island.gameObject.scene.buildIndex == index + 1)
+            return true;
+        if (OnlineIslandManager.CurIsland != index) OnlineIslandManager.TpToSpecificIsland((byte)index);
         return false;
     }
 
