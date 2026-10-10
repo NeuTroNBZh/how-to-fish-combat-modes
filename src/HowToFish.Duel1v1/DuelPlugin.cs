@@ -27,6 +27,7 @@ public sealed class DuelPlugin : BaseUnityPlugin
         Root.hideFlags = HideFlags.HideAndDontSave;
 
         if (compatible) new Harmony(PluginGuid).PatchAll(typeof(DuelPlugin).Assembly);
+        if (compatible) Root.AddComponent<Net.DuelLobby>();
         Log.LogInfo($"{PluginName} {PluginVersion} chargé (compatible={compatible}, kits={settings.Kits.Count})");
     }
 }
