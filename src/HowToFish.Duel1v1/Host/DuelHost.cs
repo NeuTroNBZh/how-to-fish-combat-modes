@@ -13,6 +13,7 @@ internal sealed class DuelHost : MonoBehaviour
     private const int FullHealth = 100;
     private const float ZoneCheckInterval = 1f;
     private const float PermanentNoticeSeconds = 3600f;
+    private const float WaitLogInterval = 5f;
 
     public static DuelHost? Instance { get; private set; }
 
@@ -26,6 +27,7 @@ internal sealed class DuelHost : MonoBehaviour
     private float _nextBroadcast;
     private float _nextZoneCheck;
     private bool _settingsChecked;
+    private float _nextWaitLog;
 
     private void Awake()
     {
@@ -111,13 +113,25 @@ internal sealed class DuelHost : MonoBehaviour
 
     private bool PrepareArena()
     {
-        if (!GameActions.EnsureIsland(DuelSession.Settings.IslandIndex)) return false;
+        int island = DuelSession.Settings.IslandIndex;
+        if (!GameActions.EnsureIsland(island))
+        {
+            LogIslandWait(island);
+            return false;
+        }
         _center = GameActions.ArenaCenter();
         var s = DuelSession.Settings;
         _spawns = s.SpawnA is { } a && s.SpawnB is { } b
             ? ArenaGeometry.Facing(a, b)
             : GroundedAutoSpawns(s.ArenaRadius);
         return true;
+    }
+
+    private void LogIslandWait(int island)
+    {
+        if (Time.time < _nextWaitLog) return;
+        _nextWaitLog = Time.time + WaitLogInterval;
+        DuelPlugin.Log.LogInfo($"En attente de l'île {island} : {GameActions.IslandStatus()}");
     }
 
     private (SpawnPoint A, SpawnPoint B) GroundedAutoSpawns(float radius)
@@ -134,10 +148,19 @@ internal sealed class DuelHost : MonoBehaviour
         var before = DuelSession.Snapshot;
         var step = _rules.Apply(before, duelEvent, Time.time);
         DuelSession.Snapshot = step.Snapshot;
+        if (step.Snapshot.Phase != before.Phase) LogTransition(before, step);
         Execute(step.Effect);
         // Re-placement au début du compte à rebours : la résurrection côté client peut ramener le joueur à sa position de mort.
         if (before.Phase == DuelPhase.Preparing && step.Snapshot.Phase == DuelPhase.Countdown) PlaceAll();
         if (step.Effect != DuelEffect.None || step.Snapshot.Phase != before.Phase) Broadcast();
+    }
+
+    private static void LogTransition(DuelSnapshot before, DuelStep step)
+    {
+        var s = step.Snapshot;
+        DuelPlugin.Log.LogInfo(
+            $"Phase {before.Phase} -> {s.Phase} (manche {s.Round}, score {s.HostScore}-{s.GuestScore}, " +
+            $"kit {s.Kit?.Name ?? "-"}, effet {step.Effect})");
     }
 
     private void Execute(DuelEffect effect)

@@ -84,6 +84,14 @@ internal static class GameActions
         return false;
     }
 
+    public static string IslandStatus()
+    {
+        var island = Island.CurIsland;
+        string scene = island != null ? island.gameObject.scene.buildIndex.ToString() : "aucune";
+        return $"chargement={IslandManager.IsLoading}, téléportation={OnlineIslandManager.TeleportPlayers}, " +
+               $"île courante={OnlineIslandManager.CurIsland}, scène={scene}";
+    }
+
     public static Vector3 ArenaCenter() => Island.IslandPos;
 
     public static Vector3 Ground(Vector3 around)
