@@ -1,0 +1,22 @@
+DUEL 1v1 pour How to Fish
+=========================
+
+Installation (une seule fois)
+1. Steam > clic droit sur How to Fish > Gérer > Parcourir les fichiers locaux.
+2. Extraire TOUT le contenu de ce zip dans ce dossier (à côté de "How to Fish.exe").
+   Accepter de remplacer les fichiers si Windows le demande.
+3. Lancer le jeu : un bouton "Duel 1v1" apparaît dans le menu principal.
+
+Jouer
+- Inviter un ami : l'un clique Duel 1v1 > Inviter un ami, puis invite l'autre via
+  l'overlay Steam. L'autre accepte l'invitation Steam.
+- Partie rapide : les deux cliquent Duel 1v1 > Partie rapide. Le premier crée le
+  duel, le second le trouve automatiquement.
+
+Règles : premier à 5 manches, 90 s par manche, kit d'armes aléatoire et île
+différente à chaque manche. Au chrono, le joueur avec le plus de vie gagne.
+
+Les deux joueurs doivent avoir la même version du mod et du jeu.
+
+Désinstaller : supprimer winhttp.dll (désactive tous les mods) ou le dossier
+BepInEx\plugins\HowToFish.Duel1v1 (retire seulement le duel).

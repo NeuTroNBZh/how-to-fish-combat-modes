@@ -14,8 +14,8 @@ public sealed class DuelRules
     public DuelStep Apply(DuelSnapshot snapshot, DuelEvent duelEvent, double now) => duelEvent switch
     {
         PlayerLeft left => OnPlayerLeft(snapshot, left.Side),
-        PlayersReady => snapshot.Phase == DuelPhase.Waiting ? StartMatch(now) : Same(snapshot),
-        RematchRequested => snapshot.Phase == DuelPhase.MatchEnd ? StartMatch(now) : Same(snapshot),
+        PlayersReady => snapshot.Phase == DuelPhase.Waiting ? StartMatch(null, now) : Same(snapshot),
+        RematchRequested => snapshot.Phase == DuelPhase.MatchEnd ? StartMatch(snapshot.Island, now) : Same(snapshot),
         PlayerDied died => OnPlayerDied(snapshot, died.Side, now),
         Tick tick => OnTick(snapshot, tick, now),
         _ => Same(snapshot),
@@ -29,12 +29,13 @@ public sealed class DuelRules
 
     private static DuelStep Same(DuelSnapshot s) => new(s, DuelEffect.None);
 
-    private DuelStep StartMatch(double now)
+    private DuelStep StartMatch(int? previousIsland, double now)
     {
         var kit = KitPicker.Pick(_settings.Kits, null, _random);
         var s = DuelSnapshot.Initial with
         {
             Phase = DuelPhase.Preparing, Round = 1, Kit = kit, PhaseEndsAt = now + DuelSettings.PrepareSeconds,
+            Island = IslandPicker.Pick(_settings.Islands, previousIsland, _random),
         };
         return new DuelStep(s, DuelEffect.PrepareRound);
     }
@@ -110,6 +111,7 @@ public sealed class DuelRules
             Phase = DuelPhase.Preparing,
             Round = s.LastRoundDraw ? s.Round : s.Round + 1,
             Kit = KitPicker.Pick(_settings.Kits, s.Kit, _random),
+            Island = IslandPicker.Pick(_settings.Islands, s.Island, _random),
             HostAtSpawnA = !s.HostAtSpawnA,
             LastRoundWinner = null,
             LastRoundDraw = false,

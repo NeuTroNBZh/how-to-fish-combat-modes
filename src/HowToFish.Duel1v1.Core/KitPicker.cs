@@ -18,11 +18,22 @@ public sealed class SystemRandomSource : IRandomSource
 
 public static class KitPicker
 {
-    public static Kit Pick(IReadOnlyList<Kit> kits, Kit? previous, IRandomSource random)
+    public static Kit Pick(IReadOnlyList<Kit> kits, Kit? previous, IRandomSource random) =>
+        RandomPicker.PickAvoiding(kits, k => previous != null && k.Name == previous.Name, random, nameof(kits));
+}
+
+public static class IslandPicker
+{
+    public static int Pick(IReadOnlyList<int> islands, int? previous, IRandomSource random) =>
+        RandomPicker.PickAvoiding(islands, i => i == previous, random, nameof(islands));
+}
+
+internal static class RandomPicker
+{
+    public static T PickAvoiding<T>(IReadOnlyList<T> items, Func<T, bool> isPrevious, IRandomSource random, string paramName)
     {
-        if (kits.Count == 0) throw new ArgumentException("Au moins un kit est requis.", nameof(kits));
-        if (kits.Count == 1 || previous is null) return kits[random.Next(kits.Count)];
-        var candidates = kits.Where(k => k.Name != previous.Name).ToList();
-        return candidates.Count == 0 ? kits[random.Next(kits.Count)] : candidates[random.Next(candidates.Count)];
+        if (items.Count == 0) throw new ArgumentException("Au moins un élément est requis.", paramName);
+        var candidates = items.Where(i => !isPrevious(i)).ToList();
+        return candidates.Count == 0 ? items[random.Next(items.Count)] : candidates[random.Next(candidates.Count)];
     }
 }

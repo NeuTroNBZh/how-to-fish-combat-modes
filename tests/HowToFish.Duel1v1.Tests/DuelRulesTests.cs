@@ -35,6 +35,45 @@ public class DuelRulesTests
         Assert.Equal(11, step.Snapshot.PhaseEndsAt);
     }
 
+    private static DuelRules RulesOnIslands(params int[] islands) =>
+        new(Settings() with { Islands = islands }, new FakeRandom());
+
+    private static DuelSnapshot NextRound(DuelRules rules, DuelSnapshot fighting)
+    {
+        var ended = rules.Apply(fighting, new PlayerDied(Side.Guest), 20).Snapshot;
+        return rules.Apply(ended, new Tick(100, 0), 20 + DuelSettings.RoundEndSeconds).Snapshot;
+    }
+
+    [Fact]
+    public void PlayersReady_PicksIslandFromSettings()
+    {
+        var step = RulesOnIslands(3, 4).Apply(DuelSnapshot.Initial, new PlayersReady(), 10);
+
+        Assert.Equal(3, step.Snapshot.Island);
+    }
+
+    [Fact]
+    public void NextRound_MovesToAnotherIsland()
+    {
+        var rules = RulesOnIslands(0, 1, 2);
+        var fighting = Fighting(rules);
+
+        var next = NextRound(rules, fighting);
+
+        Assert.Equal(DuelPhase.Preparing, next.Phase);
+        Assert.NotEqual(fighting.Island, next.Island);
+    }
+
+    [Fact]
+    public void NextRound_SingleIsland_StaysThere()
+    {
+        var rules = RulesOnIslands(4);
+
+        var next = NextRound(rules, Fighting(rules));
+
+        Assert.Equal(4, next.Island);
+    }
+
     [Fact]
     public void PlayersReady_OutsideWaiting_IsIgnored()
     {

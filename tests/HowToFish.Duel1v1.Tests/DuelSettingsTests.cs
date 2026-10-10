@@ -88,4 +88,18 @@ public class DuelSettingsTests
         Assert.Null(settings.SpawnB);
         Assert.Contains(warnings, w => w.Contains("SpawnB"));
     }
+
+    [Fact]
+    public void FromRaw_IslandsStartWithConfiguredIsland()
+    {
+        var settings = DuelSettings.FromRaw(DuelSettings.Defaults with { IslandIndex = 2 }, out _);
+
+        Assert.Equal(new[] { 2 }, settings.Islands);
+    }
+
+    [Fact]
+    public void Defaults_RotateIslands()
+    {
+        Assert.True(DuelSettings.FromRaw(DuelSettings.Defaults, out _).IslandRotation);
+    }
 }

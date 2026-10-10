@@ -16,6 +16,9 @@ internal static class GameActions
 
     public static bool ItemExists(string name) => GameInfo.GetSpawnable(name) != null;
 
+    public static int[] MainIslands() =>
+        Enumerable.Range(0, IslandManager.TotalIslands).Where(IsMainIsland).ToArray();
+
     public static bool IsMainIsland(int index) => index >= 0 && index <= byte.MaxValue && IslandManager.IsMainIsland((byte)index);
 
     // Équivalent serveur de Server.RespawnPlayer sans son ServerDropAll : le RPC s'exécute au tick

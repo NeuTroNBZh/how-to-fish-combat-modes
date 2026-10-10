@@ -18,7 +18,8 @@ internal static class DuelConfigBinder
             config.Bind("Match", "Kits", d.Kits, "Kits d'armes : kits séparés par ';', objets par '+'").Value,
             config.Bind("Arena", "SpawnA", d.SpawnA, "Spawn A 'x,y,z' (vide = automatique)").Value,
             config.Bind("Arena", "SpawnB", d.SpawnB, "Spawn B 'x,y,z' (vide = automatique)").Value,
-            config.Bind("Debug", "DebugSolo", d.DebugSolo, "Duel contre un adversaire fictif (développement)").Value);
+            config.Bind("Debug", "DebugSolo", d.DebugSolo, "Duel contre un adversaire fictif (développement)").Value,
+            config.Bind("Arena", "IslandRotation", d.IslandRotation, "Change d'île à chaque manche (sinon IslandIndex uniquement)").Value);
         var key = config.Bind("Debug", "DebugPositionKey", "F9", "Touche qui affiche ta position (nom de touche Input System)").Value;
 
         var settings = DuelSettings.FromRaw(raw, out var warnings);

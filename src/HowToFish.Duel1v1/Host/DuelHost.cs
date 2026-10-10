@@ -28,6 +28,7 @@ internal sealed class DuelHost : MonoBehaviour
     private float _nextZoneCheck;
     private bool _settingsChecked;
     private float _nextWaitLog;
+    private bool _pendingPrepare;
 
     private void Awake()
     {
@@ -45,7 +46,9 @@ internal sealed class DuelHost : MonoBehaviour
         var guest = Guest();
         CheckHandshake(guest);
         DetectReadinessAndLeaves(guest);
-        Step(new Tick(Player.LocalPlayer.Vitals.Health, guest != null ? guest.Vitals.Health : FullHealth));
+        // Le temps de la préparation est gelé tant que l'île de la manche charge.
+        if (!_pendingPrepare || TryPrepareRound())
+            Step(new Tick(Player.LocalPlayer.Vitals.Health, guest != null ? guest.Vitals.Health : FullHealth));
         KeepPlayersInZone();
         DuelSession.SetDisplay(WireState.From(DuelSession.Snapshot, Time.time), Time.time);
         if (Time.time >= _nextBroadcast) Broadcast();
@@ -68,6 +71,7 @@ internal sealed class DuelHost : MonoBehaviour
         _helloFrom = 0;
         _guestSeenAt = -1f;
         _settingsChecked = false;
+        _pendingPrepare = false;
         _givenItems.Clear();
     }
 
@@ -107,23 +111,27 @@ internal sealed class DuelHost : MonoBehaviour
         bool solo = DuelSession.Settings.DebugSolo;
         bool guestReady = solo || (guest != null && _helloFrom == guest.SteamID);
         var phase = DuelSession.Snapshot.Phase;
-        if (phase == DuelPhase.Waiting && guestReady && PrepareArena()) Step(new PlayersReady());
+        if (phase == DuelPhase.Waiting && guestReady) Step(new PlayersReady());
         if (phase != DuelPhase.Waiting && !solo && guest == null) Step(new PlayerLeft(Side.Guest));
     }
 
-    private bool PrepareArena()
+    private bool TryPrepareRound()
     {
-        int island = DuelSession.Settings.IslandIndex;
+        int island = DuelSession.Snapshot.Island;
         if (!GameActions.EnsureIsland(island))
         {
             LogIslandWait(island);
             return false;
         }
+        _pendingPrepare = false;
         _center = GameActions.ArenaCenter();
         var s = DuelSession.Settings;
-        _spawns = s.SpawnA is { } a && s.SpawnB is { } b
+        // Les spawns manuels de la config ne valent que pour l'île configurée.
+        _spawns = s.SpawnA is { } a && s.SpawnB is { } b && island == s.IslandIndex
             ? ArenaGeometry.Facing(a, b)
             : GroundedAutoSpawns(s.ArenaRadius);
+        DuelPlugin.Log.LogInfo($"Île {island} prête, préparation de la manche {DuelSession.Snapshot.Round}");
+        PrepareRound();
         return true;
     }
 
@@ -160,7 +168,7 @@ internal sealed class DuelHost : MonoBehaviour
         var s = step.Snapshot;
         DuelPlugin.Log.LogInfo(
             $"Phase {before.Phase} -> {s.Phase} (manche {s.Round}, score {s.HostScore}-{s.GuestScore}, " +
-            $"kit {s.Kit?.Name ?? "-"}, effet {step.Effect})");
+            $"kit {s.Kit?.Name ?? "-"}, île {s.Island}, effet {step.Effect})");
     }
 
     private void Execute(DuelEffect effect)
@@ -168,7 +176,7 @@ internal sealed class DuelHost : MonoBehaviour
         switch (effect)
         {
             case DuelEffect.PrepareRound:
-                PrepareRound();
+                _pendingPrepare = true;
                 break;
             case DuelEffect.StartFight:
                 Guarded("tir allié", () => ServerSettings.Instance.ToggleFriendlyFire(true));
@@ -176,6 +184,7 @@ internal sealed class DuelHost : MonoBehaviour
                     Guarded($"soin {side}", () => GameActions.HealToFull(player));
                 break;
             case DuelEffect.ResetToWaiting:
+                _pendingPrepare = false;
                 Guarded("nettoyage des armes", DestroyGivenItems);
                 Guarded("réanimation hôte", () => GameActions.Revive(Player.LocalPlayer));
                 break;

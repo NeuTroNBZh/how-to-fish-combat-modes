@@ -6,11 +6,12 @@ namespace HowToFish.Duel1v1.Core;
 
 public sealed record RawDuelSettings(
     int RoundsToWin, int RoundTimeSeconds, int CountdownSeconds, float ArenaRadius,
-    int IslandIndex, string Kits, string SpawnA, string SpawnB, bool DebugSolo);
+    int IslandIndex, string Kits, string SpawnA, string SpawnB, bool DebugSolo, bool IslandRotation);
 
 public sealed record DuelSettings(
     int RoundsToWin, int RoundTimeSeconds, int CountdownSeconds, float ArenaRadius,
-    int IslandIndex, IReadOnlyList<Kit> Kits, Vector3? SpawnA, Vector3? SpawnB, bool DebugSolo)
+    int IslandIndex, IReadOnlyList<Kit> Kits, Vector3? SpawnA, Vector3? SpawnB, bool DebugSolo,
+    bool IslandRotation, IReadOnlyList<int> Islands)
 {
     public const double PrepareSeconds = 1.0;
     public const double RoundEndSeconds = 3.0;
@@ -23,7 +24,7 @@ public sealed record DuelSettings(
     public const int DefaultIslandIndex = 0;
 
     public static RawDuelSettings Defaults { get; } =
-        new(5, 90, 3, 60f, DefaultIslandIndex, DefaultKits, "", "", false);
+        new(5, 90, 3, 60f, DefaultIslandIndex, DefaultKits, "", "", false, true);
 
     public DuelSettings WithKits(IReadOnlyList<Kit> kits) => this with { Kits = kits };
 
@@ -31,16 +32,19 @@ public sealed record DuelSettings(
     {
         var w = new List<string>();
         var d = Defaults;
+        int island = InRange(nameof(raw.IslandIndex), raw.IslandIndex, 0, 255, d.IslandIndex, w);
         var settings = new DuelSettings(
             InRange(nameof(raw.RoundsToWin), raw.RoundsToWin, 1, 15, d.RoundsToWin, w),
             InRange(nameof(raw.RoundTimeSeconds), raw.RoundTimeSeconds, 15, 600, d.RoundTimeSeconds, w),
             InRange(nameof(raw.CountdownSeconds), raw.CountdownSeconds, 0, 10, d.CountdownSeconds, w),
             InRange(nameof(raw.ArenaRadius), raw.ArenaRadius, 10f, 500f, d.ArenaRadius, w),
-            InRange(nameof(raw.IslandIndex), raw.IslandIndex, 0, 255, d.IslandIndex, w),
+            island,
             ParseKits(raw.Kits, w),
             ParseSpawn(nameof(raw.SpawnA), raw.SpawnA, w),
             ParseSpawn(nameof(raw.SpawnB), raw.SpawnB, w),
-            raw.DebugSolo);
+            raw.DebugSolo,
+            raw.IslandRotation,
+            new[] { island });
         warnings = w;
         return settings;
     }

@@ -24,7 +24,8 @@ internal static class DuelPreflight
             island = DuelSettings.DefaultIslandIndex;
         }
 
-        validated = settings.WithKits(kits) with { IslandIndex = island };
+        var islands = settings.IslandRotation ? GameActions.MainIslands() : new[] { island };
+        validated = settings.WithKits(kits) with { IslandIndex = island, Islands = islands };
         error = "";
         return true;
     }
