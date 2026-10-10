@@ -29,6 +29,7 @@ public sealed class DuelPlugin : BaseUnityPlugin
         if (compatible) new Harmony(PluginGuid).PatchAll(typeof(DuelPlugin).Assembly);
         if (compatible) Root.AddComponent<Net.DuelLobby>();
         if (compatible) Root.AddComponent<Net.DuelChannel>();
+        if (compatible) Root.AddComponent<Host.DuelHost>();
         Log.LogInfo($"{PluginName} {PluginVersion} chargé (compatible={compatible}, kits={settings.Kits.Count})");
     }
 }
