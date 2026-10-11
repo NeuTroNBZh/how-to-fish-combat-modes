@@ -40,6 +40,8 @@ public sealed class DuelPlugin : BaseUnityPlugin
             Root.AddComponent<Ui.DuelHud>();
             Root.AddComponent<Ui.ArenaHud>();
             Root.AddComponent<Ui.CombatControllers>();
+            Root.AddComponent<Ui.Native.LobbyScreen>();
+            Root.AddComponent<Ui.Native.EndScreen>();
             Root.AddComponent<Ui.DebugTools>();
         }
         else
