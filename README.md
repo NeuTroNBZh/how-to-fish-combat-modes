@@ -1,5 +1,7 @@
 # How to Fish — Combat Modes
 
+![Combat Modes](art/banner.png)
+
 A multiplayer mod for **How to Fish** that turns its islands into arenas. It adds three competitive game modes, a native-looking menu, and a scoreboard, all playable with friends or through quick matchmaking.
 
 | Mode | Players | Goal |
@@ -81,7 +83,7 @@ dotnet build HowToFish.CombatModes.slnx -c Release -p:GameDir="C:\Path\To\How to
 dotnet test HowToFish.CombatModes.slnx -c Release
 ```
 
-`GameDir` is the folder that contains `How to Fish.exe`. The build references the game assemblies from that folder (nothing from the game is stored in this repository) and copies the plugin into `BepInEx/plugins/HowToFish.CombatModes`. `scripts/package.ps1` builds the release archive.
+`GameDir` is the folder that contains `How to Fish.exe`. The build references the game assemblies from that folder (nothing from the game is stored in this repository) and copies the plugin into `BepInEx/plugins/HowToFish.CombatModes`. `scripts/package.ps1` builds the release archive and `scripts/package-thunderstore.ps1` the Thunderstore package.
 
 ### Project layout
 
@@ -91,6 +93,7 @@ dotnet test HowToFish.CombatModes.slnx -c Release
 | `src/HowToFish.CombatModes` | The BepInEx plugin: Harmony patches, host logic, Steam lobbies, native UI. |
 | `tests/HowToFish.CombatModes.Tests` | xUnit tests for the core library. |
 | `docs/GAME_INTERNALS.md` | Notes about the game internals the mod relies on. |
+| `thunderstore/`, `art/` | Thunderstore manifest and README, icon and banner (`scripts/make-art.ps1`). |
 
 ## Contributing
 

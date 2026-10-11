@@ -1,0 +1,9 @@
+{
+  "name": "CombatModes",
+  "version_number": "2.0.0",
+  "website_url": "https://github.com/NeuTroNBZh/how-to-fish-combat-modes",
+  "description": "Competitive multiplayer for How to Fish: 1v1 Duel, Free-for-all and Gun Game (2-8 players) with native menus, scoreboard, random fair loadouts and quick match. Every player needs the mod.",
+  "dependencies": [
+    "BepInEx-BepInExPack-5.4.2305"
+  ]
+}
