@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/HowToFish.CombatModes.Core/HowToFish.CombatModes.Core.csproj" />
+    <Project Path="src/HowToFish.CombatModes/HowToFish.CombatModes.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/HowToFish.CombatModes.Tests/HowToFish.CombatModes.Tests.csproj" />
+  </Folder>
+</Solution>

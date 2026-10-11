@@ -1,9 +1,0 @@
-<Solution>
-  <Folder Name="/src/">
-    <Project Path="src/HowToFish.Duel1v1.Core/HowToFish.Duel1v1.Core.csproj" />
-    <Project Path="src/HowToFish.Duel1v1/HowToFish.Duel1v1.csproj" />
-  </Folder>
-  <Folder Name="/tests/">
-    <Project Path="tests/HowToFish.Duel1v1.Tests/HowToFish.Duel1v1.Tests.csproj" />
-  </Folder>
-</Solution>

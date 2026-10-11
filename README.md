@@ -4,7 +4,7 @@ Ajoute trois modes de combat lançables depuis le menu principal : duel 1v1 en m
 
 ## Installation (chaque joueur)
 1. Installer BepInEx 5 (x64) dans le dossier du jeu.
-2. Copier `HowToFish.Duel1v1.dll` et `HowToFish.Duel1v1.Core.dll` dans `BepInEx\plugins\HowToFish.Duel1v1\`.
+2. Copier `HowToFish.CombatModes.dll` et `HowToFish.CombatModes.Core.dll` dans `BepInEx\plugins\HowToFish.CombatModes\`.
 
 ## Jouer
 Menu principal → **Mods de combat** → mode → **Inviter des amis** ou **Partie rapide**. Tous les joueurs doivent avoir le mod.
@@ -17,10 +17,10 @@ Menu principal → **Mods de combat** → mode → **Inviter des amis** ou **Par
 Section `[Arena]` de la config : `KillTarget`, `TimeLimitSeconds`, `KitRotationSeconds`, `RespawnSeconds`, `SpawnProtectionSeconds`, `Ladder`.
 
 ## Réglages
-`BepInEx\config\htf.duel1v1.cfg` : manches à gagner, durée des manches, compte à rebours, île, rayon de l'arène, kits d'armes, spawns, mode debug solo.
+`BepInEx\config\htf.combatmodes.cfg` : manches à gagner, durée des manches, compte à rebours, île, rayon de l'arène, kits d'armes, spawns, mode debug solo.
 Touche de position (défaut F9) pour relever des coordonnées de spawn. En `DebugSolo` : F10 simule la mort de l'adversaire (duel) ou un kill sur le bot (arène), F11 ajoute un bot dans le salon arène. `ForceImguiFallback` (section Debug) réaffiche l'ancienne interface IMGUI pour diagnostic.
 
 ## Développement
-- `dotnet test HowToFish.Duel1v1.slnx` : tests du cœur (règles, config, messages).
-- `dotnet build HowToFish.Duel1v1.slnx` : compile et copie le plugin dans le jeu.
+- `dotnet test HowToFish.CombatModes.slnx` : tests du cœur (règles, config, messages).
+- `dotnet build HowToFish.CombatModes.slnx` : compile et copie le plugin dans le jeu.
 - Code décompilé de référence : `..\source\Assembly-CSharp\`.

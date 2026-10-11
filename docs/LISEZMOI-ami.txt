@@ -27,4 +27,4 @@ Tous les joueurs doivent avoir la même version du mod et du jeu.
 
 
 Désinstaller : supprimer winhttp.dll (désactive tous les mods) ou le dossier
-BepInEx\plugins\HowToFish.Duel1v1 (retire seulement les modes de combat).
+BepInEx\plugins\HowToFish.CombatModes (retire seulement les modes de combat).
