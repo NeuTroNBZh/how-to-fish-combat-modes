@@ -18,7 +18,7 @@ Section `[Arena]` de la config : `KillTarget`, `TimeLimitSeconds`, `KitRotationS
 
 ## Réglages
 `BepInEx\config\htf.duel1v1.cfg` : manches à gagner, durée des manches, compte à rebours, île, rayon de l'arène, kits d'armes, spawns, mode debug solo.
-Touche de position (défaut F9) pour relever des coordonnées de spawn. En `DebugSolo` : F10 simule la mort de l'adversaire (duel) ou un kill sur le bot (arène), F11 ajoute un bot dans le salon arène.
+Touche de position (défaut F9) pour relever des coordonnées de spawn. En `DebugSolo` : F10 simule la mort de l'adversaire (duel) ou un kill sur le bot (arène), F11 ajoute un bot dans le salon arène. `ForceImguiFallback` (section Debug) réaffiche l'ancienne interface IMGUI pour diagnostic.
 
 ## Développement
 - `dotnet test HowToFish.Duel1v1.slnx` : tests du cœur (règles, config, messages).
