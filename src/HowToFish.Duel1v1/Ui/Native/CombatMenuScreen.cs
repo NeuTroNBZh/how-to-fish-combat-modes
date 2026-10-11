@@ -104,8 +104,8 @@ internal sealed class CombatMenuScreen : MonoBehaviour
                 break;
             case Page.Launch:
                 Title(GameModes.Label(_mode).ToUpperInvariant());
-                AddButton("Inviter des amis", () => Start(quickMatch: false));
-                AddButton("Partie rapide", () => Start(quickMatch: true));
+                AddButton("Inviter des amis", () => Launch(quickMatch: false));
+                AddButton("Partie rapide", () => Launch(quickMatch: true));
                 AddButton("Retour", Back);
                 break;
             case Page.Searching:
@@ -140,7 +140,7 @@ internal sealed class CombatMenuScreen : MonoBehaviour
         _page = Page.Launch;
     }
 
-    private void Start(bool quickMatch)
+    private void Launch(bool quickMatch)
     {
         if (!CombatLaunch.Launch(_mode, quickMatch) || DuelSession.IsSearching) return;
         _root!.SetActive(false);
