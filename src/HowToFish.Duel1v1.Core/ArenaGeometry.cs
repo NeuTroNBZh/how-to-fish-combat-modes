@@ -28,7 +28,7 @@ public static class ArenaGeometry
         return dx * dx + dz * dz > radius * radius || position.Y < center.Y - FallDepth;
     }
 
-    private static float YawTowards(Vector3 from, Vector3 to)
+    public static float YawTowards(Vector3 from, Vector3 to)
     {
         var degrees = (float)(Math.Atan2(to.X - from.X, to.Z - from.Z) * 180.0 / Math.PI);
         return (degrees + 360f) % 360f;
