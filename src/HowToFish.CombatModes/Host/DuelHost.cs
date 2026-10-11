@@ -84,7 +84,7 @@ internal sealed class DuelHost : MonoBehaviour
         {
             CombatSession.LockLobby();
             SteamMatchmaking.SetLobbyJoinable(CombatSession.LobbyId, false);
-            CombatSession.ShowNotice($"{error} — duel impossible, retourne au menu", Time.time, PermanentNoticeSeconds);
+            CombatSession.ShowNotice(Ui.Lang.Text.MatchImpossible(error), Time.time, PermanentNoticeSeconds);
             return false;
         }
         CombatSession.UseSettings(settings);
@@ -103,7 +103,7 @@ internal sealed class DuelHost : MonoBehaviour
         bool helloMissing = _helloFrom != guest.SteamID;
         if (!helloMissing || Time.time - _guestSeenAt < DuelSettings.HelloTimeoutSeconds) return;
         CombatModesPlugin.Log.LogWarning($"{guest.SteamName} n'a pas le mod duel, expulsion");
-        CombatSession.ShowNotice("Ton adversaire n'a pas le mod Duel 1v1", Time.time);
+        CombatSession.ShowNotice(Ui.Lang.Text.OpponentWithoutMod, Time.time);
         ConnectionManager.Instance.KickSteamUserIfConnected(new CSteamID(guest.SteamID));
         _guestSeenAt = -1f;
     }

@@ -182,14 +182,14 @@ internal sealed class CombatLobby : MonoBehaviour
     {
         if (callback.m_EChatRoomEnterResponse != 1)
         {
-            EndSearch("Ce salon n'est plus disponible, relance une partie rapide");
+            EndSearch(Ui.Lang.Text.LobbyUnavailable);
             return;
         }
         var lobby = new CSteamID(callback.m_ulSteamIDLobby);
         if (SteamMatchmaking.GetLobbyData(lobby, TagKey) != TagValue) return;
         if (SteamMatchmaking.GetLobbyData(lobby, GameVersionKey) != Application.version)
         {
-            EndSearch("Ce salon utilise une autre version du jeu");
+            EndSearch(Ui.Lang.Text.LobbyOtherGameVersion);
             return;
         }
         if (SteamMatchmaking.GetLobbyOwner(lobby) == SteamUser.GetSteamID()) return;

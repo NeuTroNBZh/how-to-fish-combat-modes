@@ -30,7 +30,7 @@ internal sealed class ArenaHud : MonoBehaviour
         var w = CombatSession.ArenaDisplay;
         if (w == null)
         {
-            GUI.Label(new Rect(0, 40, width, 60), "Connexion à l'hôte…", _top);
+            GUI.Label(new Rect(0, 40, width, 60), Lang.Text.ConnectingToHost, _top);
             return;
         }
         DrawPhase(w, width);
@@ -44,7 +44,7 @@ internal sealed class ArenaHud : MonoBehaviour
                 DrawLobby(w, width);
                 break;
             case ArenaPhase.Preparing:
-                GUI.Label(new Rect(0, 40, width, 60), "Préparation de l'île…", _top);
+                GUI.Label(new Rect(0, 40, width, 60), Lang.Text.PreparingIsland, _top);
                 break;
             case ArenaPhase.Countdown:
                 DrawTop(w, width);
@@ -65,29 +65,29 @@ internal sealed class ArenaHud : MonoBehaviour
     private void DrawTop(ArenaWire w, float width)
     {
         GUI.Box(new Rect(width / 2 - 320, 20, 640, 90), GUIContent.none);
-        GUI.Label(new Rect(width / 2 - 320, 25, 640, 45), ArenaHudFormatter.TopLine(w, CombatUiState.LocalId, CombatUiState.NameOf), _top);
-        GUI.Label(new Rect(width / 2 - 320, 65, 640, 40), ArenaHudFormatter.SubLine(w, CombatUiState.LocalId, Remaining(w)), _row);
+        GUI.Label(new Rect(width / 2 - 320, 25, 640, 45), ArenaHudFormatter.TopLine(Lang.Text, w, CombatUiState.LocalId, CombatUiState.NameOf), _top);
+        GUI.Label(new Rect(width / 2 - 320, 65, 640, 40), ArenaHudFormatter.SubLine(Lang.Text, w, CombatUiState.LocalId, Remaining(w)), _row);
     }
 
     private void DrawLobby(ArenaWire w, float width)
     {
         var x = width / 2 - PanelWidth / 2;
         GUI.Box(new Rect(x, 200, PanelWidth, 160 + w.Players.Count * RowHeight), GUIContent.none);
-        GUI.Label(new Rect(x, 210, PanelWidth, 40), $"SALON — {GameModes.Label(w.Mode)} ({w.Players.Count}/{ArenaSettings.MaxPlayers})", _top);
+        GUI.Label(new Rect(x, 210, PanelWidth, 40), Lang.Text.LobbyTitle(Lang.Text.ModeLabel(w.Mode), w.Players.Count, ArenaSettings.MaxPlayers), _top);
         for (int i = 0; i < w.Players.Count; i++)
             GUI.Label(new Rect(x, 260 + i * RowHeight, PanelWidth, RowHeight), CombatUiState.NameOf(w.Players[i].SteamId), _row);
         var y = 270 + w.Players.Count * RowHeight;
         if (CombatSession.IsHost)
         {
             GUI.enabled = w.Players.Count >= ArenaRules.MinPlayers;
-            if (GUI.Button(new Rect(x + 40, y, 220, 50), "Lancer")) CombatActions.Replay();
+            if (GUI.Button(new Rect(x + 40, y, 220, 50), Lang.Text.Start)) CombatActions.Replay();
             GUI.enabled = true;
         }
         else
         {
-            GUI.Label(new Rect(x + 20, y, 260, 50), "En attente de l'hôte…", _row);
+            GUI.Label(new Rect(x + 20, y, 260, 50), Lang.Text.WaitingForHost, _row);
         }
-        if (GUI.Button(new Rect(x + PanelWidth - 260, y, 220, 50), "Quitter")) CombatActions.Quit();
+        if (GUI.Button(new Rect(x + PanelWidth - 260, y, 220, 50), Lang.Text.Quit)) CombatActions.Quit();
     }
 
     private void DrawScoreboard(ArenaWire w, float width, float y)
@@ -96,21 +96,21 @@ internal sealed class ArenaHud : MonoBehaviour
         var x = width / 2 - PanelWidth / 2;
         GUI.Box(new Rect(x, y, PanelWidth, 20 + ranking.Count * RowHeight), GUIContent.none);
         for (int i = 0; i < ranking.Count; i++)
-            GUI.Label(new Rect(x, y + 10 + i * RowHeight, PanelWidth, RowHeight), ArenaHudFormatter.Row(i + 1, ranking[i], w.Mode, CombatUiState.NameOf), _row);
+            GUI.Label(new Rect(x, y + 10 + i * RowHeight, PanelWidth, RowHeight), ArenaHudFormatter.Row(Lang.Text, i + 1, ranking[i], w.Mode, CombatUiState.NameOf), _row);
     }
 
     private void DrawEnd(ArenaWire w, float width)
     {
-        GUI.Label(new Rect(0, 100, width, 100), ArenaHudFormatter.EndBanner(w, CombatUiState.LocalId, CombatUiState.NameOf), _banner);
+        GUI.Label(new Rect(0, 100, width, 100), ArenaHudFormatter.EndBanner(Lang.Text, w, CombatUiState.LocalId, CombatUiState.NameOf), _banner);
         DrawScoreboard(w, width, 220);
         var y = 260 + w.Players.Count * RowHeight;
         if (CombatSession.IsHost)
         {
             GUI.enabled = w.Players.Count >= ArenaRules.MinPlayers;
-            if (GUI.Button(new Rect(width / 2 - 230, y, 210, 60), "Rejouer")) CombatActions.Replay();
+            if (GUI.Button(new Rect(width / 2 - 230, y, 210, 60), Lang.Text.PlayAgain)) CombatActions.Replay();
             GUI.enabled = true;
         }
-        if (GUI.Button(new Rect(width / 2 + 20, y, 210, 60), "Quitter")) CombatActions.Quit();
+        if (GUI.Button(new Rect(width / 2 + 20, y, 210, 60), Lang.Text.Quit)) CombatActions.Quit();
     }
 
     private void DrawNotice(float width)

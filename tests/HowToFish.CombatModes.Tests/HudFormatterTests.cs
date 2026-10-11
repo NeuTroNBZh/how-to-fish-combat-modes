@@ -38,9 +38,9 @@ public class HudFormatterTests
     [Fact]
     public void RoundBanner_DependsOnLocalSide()
     {
-        Assert.Equal("TU GAGNES LA MANCHE", HudFormatter.RoundBanner(State(DuelPhase.RoundEnd, round: Side.Host), Side.Host));
-        Assert.Equal("L'ADVERSAIRE GAGNE LA MANCHE", HudFormatter.RoundBanner(State(DuelPhase.RoundEnd, round: Side.Host), Side.Guest));
-        Assert.Equal("MANCHE NULLE", HudFormatter.RoundBanner(State(DuelPhase.RoundEnd, draw: true), Side.Guest));
+        Assert.Equal("TU GAGNES LA MANCHE", HudFormatter.RoundBanner(UiText.French, State(DuelPhase.RoundEnd, round: Side.Host), Side.Host));
+        Assert.Equal("L'ADVERSAIRE GAGNE LA MANCHE", HudFormatter.RoundBanner(UiText.French, State(DuelPhase.RoundEnd, round: Side.Host), Side.Guest));
+        Assert.Equal("MANCHE NULLE", HudFormatter.RoundBanner(UiText.French, State(DuelPhase.RoundEnd, draw: true), Side.Guest));
     }
 
     [Fact]
@@ -48,15 +48,15 @@ public class HudFormatterTests
     {
         var s = State(DuelPhase.MatchEnd, host: 3, guest: 5, match: Side.Guest);
 
-        Assert.Equal("VICTOIRE 5 - 3", HudFormatter.MatchBanner(s, Side.Guest));
-        Assert.Equal("DÉFAITE 3 - 5", HudFormatter.MatchBanner(s, Side.Host));
+        Assert.Equal("VICTOIRE 5 - 3", HudFormatter.MatchBanner(UiText.French, s, Side.Guest));
+        Assert.Equal("DÉFAITE 3 - 5", HudFormatter.MatchBanner(UiText.French, s, Side.Host));
     }
 
     [Fact]
     public void WaitingText_MentionsForfeit()
     {
-        Assert.Equal("En attente d'un adversaire…", HudFormatter.WaitingText(null, Side.Host));
+        Assert.Equal("En attente d'un adversaire…", HudFormatter.WaitingText(UiText.French, null, Side.Host));
         Assert.Equal("L'adversaire a quitté — victoire par forfait. En attente d'un adversaire…",
-            HudFormatter.WaitingText(State(DuelPhase.Waiting, match: Side.Host, forfeit: true), Side.Host));
+            HudFormatter.WaitingText(UiText.French, State(DuelPhase.Waiting, match: Side.Host, forfeit: true), Side.Host));
     }
 }

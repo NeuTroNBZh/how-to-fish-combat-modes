@@ -26,7 +26,7 @@ internal sealed class DuelHud : MonoBehaviour
         var s = CombatSession.Display;
         if (s == null || s.Phase == DuelPhase.Waiting)
         {
-            GUI.Label(new Rect(0, 40, width, 60), HudFormatter.WaitingText(s, CombatSession.LocalSide), _top);
+            GUI.Label(new Rect(0, 40, width, 60), HudFormatter.WaitingText(Lang.Text, s, CombatSession.LocalSide), _top);
             return;
         }
         DrawTopBar(s, width);
@@ -41,7 +41,7 @@ internal sealed class DuelHud : MonoBehaviour
         var line = HudFormatter.ScoreLine(s, CombatSession.LocalSide, SteamFriends.GetPersonaName(), opponent);
         GUI.Box(new Rect(width / 2 - 260, 20, 520, 90), GUIContent.none);
         GUI.Label(new Rect(width / 2 - 260, 25, 520, 45), line, _top);
-        var info = $"Manche {s.Round} · {HudFormatter.Clock(Remaining(s))} · Kit : {s.KitName}";
+        var info = Lang.Text.RoundClockKit(s.Round, HudFormatter.Clock(Remaining(s)), s.KitName);
         GUI.Label(new Rect(width / 2 - 260, 65, 520, 40), info, _top);
         if (CombatControllers.LoadoutText.Length > 0) GUI.Label(new Rect(0, 115, width, 40), CombatControllers.LoadoutText, _small);
     }
@@ -55,7 +55,7 @@ internal sealed class DuelHud : MonoBehaviour
                 GUI.Label(center, HudFormatter.CountdownNumber(Remaining(s)).ToString(), _big);
                 break;
             case DuelPhase.RoundEnd:
-                GUI.Label(center, HudFormatter.RoundBanner(s, CombatSession.LocalSide), _banner);
+                GUI.Label(center, HudFormatter.RoundBanner(Lang.Text, s, CombatSession.LocalSide), _banner);
                 break;
             case DuelPhase.MatchEnd:
                 DrawMatchEnd(s, width);
@@ -65,9 +65,9 @@ internal sealed class DuelHud : MonoBehaviour
 
     private void DrawMatchEnd(WireState s, float width)
     {
-        GUI.Label(new Rect(0, 360, width, 120), HudFormatter.MatchBanner(s, CombatSession.LocalSide), _banner);
-        if (GUI.Button(new Rect(width / 2 - 220, 500, 200, 60), "Revanche")) CombatActions.Replay();
-        if (GUI.Button(new Rect(width / 2 + 20, 500, 200, 60), "Quitter")) CombatActions.Quit();
+        GUI.Label(new Rect(0, 360, width, 120), HudFormatter.MatchBanner(Lang.Text, s, CombatSession.LocalSide), _banner);
+        if (GUI.Button(new Rect(width / 2 - 220, 500, 200, 60), Lang.Text.Rematch)) CombatActions.Replay();
+        if (GUI.Button(new Rect(width / 2 + 20, 500, 200, 60), Lang.Text.Quit)) CombatActions.Quit();
     }
 
     private void DrawNotice(float width)

@@ -70,9 +70,9 @@ internal static class WeaponUpgrades
     {
         var name = item.name.Replace("(Clone)", "").Trim();
         var parts = new List<string>();
-        if (item is Melee melee && melee.SharpnessIndex > 0) parts.Add($"affûtage {melee.SharpnessIndex}");
+        if (item is Melee melee && melee.SharpnessIndex > 0) parts.Add(Ui.Lang.Text.Sharpness(melee.SharpnessIndex));
         if (item is Weapon { Attachments: { } a }) parts.AddRange(DescribeAttachments(a));
-        return parts.Count == 0 ? $"{name} (nu)" : $"{name} : {string.Join(", ", parts)}";
+        return parts.Count == 0 ? $"{name} ({Ui.Lang.Text.Bare})" : $"{name} : {string.Join(", ", parts)}";
     }
 
     private static IEnumerable<string> DescribeAttachments(Attachments a)
@@ -81,10 +81,10 @@ internal static class WeaponUpgrades
         if (sight != null) yield return sight.NameLocalized;
         var barrel = a.BarrelAttachment != 0 ? BarrelsOf(a)[a.BarrelAttachment].Info : null;
         if (barrel != null) yield return barrel.NameLocalized;
-        if (a.LaserSight) yield return "laser";
-        if (a.ExtendedMag) yield return "chargeur étendu";
-        if (a.AmmoType > 0) yield return $"munitions niv. {a.AmmoType}";
-        if (a.QuiverIndex > 0) yield return $"carquois niv. {a.QuiverIndex}";
+        if (a.LaserSight) yield return Ui.Lang.Text.Laser;
+        if (a.ExtendedMag) yield return Ui.Lang.Text.ExtendedMag;
+        if (a.AmmoType > 0) yield return Ui.Lang.Text.AmmoLevel(a.AmmoType);
+        if (a.QuiverIndex > 0) yield return Ui.Lang.Text.QuiverLevel(a.QuiverIndex);
     }
 
     private static IEnumerable<Item> Items(Player player) =>

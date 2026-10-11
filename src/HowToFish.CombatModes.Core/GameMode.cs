@@ -37,10 +37,4 @@ public static class GameModes
 
     public static int MaxMembers(GameMode mode) => mode == GameMode.Duel ? DuelMaxMembers : ArenaMaxMembers;
 
-    public static string Label(GameMode mode) => mode switch
-    {
-        GameMode.Duel => "Duel 1v1",
-        GameMode.Deathmatch => "Mêlée générale",
-        _ => "Course à l'armement",
-    };
 }

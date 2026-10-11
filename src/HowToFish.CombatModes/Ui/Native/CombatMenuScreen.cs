@@ -104,19 +104,19 @@ internal sealed class CombatMenuScreen : MonoBehaviour
         switch (page)
         {
             case Page.Modes:
-                Title("MODS DE COMBAT");
-                foreach (var mode in GameModes.All) AddButton(GameModes.Label(mode), () => Choose(mode));
-                AddButton("Retour", Back);
+                Title(Lang.Text.CombatModes.ToUpperInvariant());
+                foreach (var mode in GameModes.All) AddButton(Lang.Text.ModeLabel(mode), () => Choose(mode));
+                AddButton(Lang.Text.Back, Back);
                 break;
             case Page.Launch:
-                Title(GameModes.Label(_mode).ToUpperInvariant());
-                AddButton("Inviter des amis", () => Launch(quickMatch: false));
-                AddButton("Partie rapide", () => Launch(quickMatch: true));
-                AddButton("Retour", Back);
+                Title(Lang.Text.ModeLabel(_mode).ToUpperInvariant());
+                AddButton(Lang.Text.InviteFriends, () => Launch(quickMatch: false));
+                AddButton(Lang.Text.QuickMatch, () => Launch(quickMatch: true));
+                AddButton(Lang.Text.Back, Back);
                 break;
             case Page.Searching:
-                Title($"Recherche d'un salon {GameModes.Label(CombatSession.Mode)}…");
-                AddButton("Annuler", () => CombatLobby.Instance?.CancelSearch());
+                Title(Lang.Text.SearchingLobby(Lang.Text.ModeLabel(CombatSession.Mode)));
+                AddButton(Lang.Text.Cancel, () => CombatLobby.Instance?.CancelSearch());
                 break;
         }
         _notice = GameUiKit.Label(_root.transform, "", TextSize, GameInfo.RedColor);

@@ -61,11 +61,11 @@ internal sealed class CombatHud : NativeScreen
         if (s == null) return;
         var local = CombatSession.LocalSide;
         _top!.text = HudFormatter.ScoreLine(s, local, CombatUiState.NameOf(CombatUiState.LocalId), CombatUiState.OpponentName);
-        _sub!.text = $"Manche {s.Round}  ·  {HudFormatter.Clock(CombatUiState.Remaining())}  ·  Kit : {s.KitName}";
+        _sub!.text = Lang.Text.RoundClockKit(s.Round, HudFormatter.Clock(CombatUiState.Remaining()), s.KitName);
         if (s.Phase != _lastDuelPhase)
         {
-            if (s.Phase == DuelPhase.RoundEnd) ShowBanner(HudFormatter.RoundBanner(s, local), HudFormatter.RoundTone(s, local));
-            if (s.Phase == DuelPhase.Fighting && _lastDuelPhase == DuelPhase.Countdown) ShowBanner(HudFormatter.Go, BannerTone.Good);
+            if (s.Phase == DuelPhase.RoundEnd) ShowBanner(HudFormatter.RoundBanner(Lang.Text, s, local), HudFormatter.RoundTone(s, local));
+            if (s.Phase == DuelPhase.Fighting && _lastDuelPhase == DuelPhase.Countdown) ShowBanner(Lang.Text.Go, BannerTone.Good);
             _lastDuelPhase = s.Phase;
         }
     }
@@ -74,11 +74,11 @@ internal sealed class CombatHud : NativeScreen
     {
         var w = CombatSession.ArenaDisplay;
         if (w == null) return;
-        _top!.text = ArenaHudFormatter.TopLine(w, CombatUiState.LocalId, CombatUiState.NameOf);
-        _sub!.text = ArenaHudFormatter.SubLine(w, CombatUiState.LocalId, CombatUiState.Remaining());
+        _top!.text = ArenaHudFormatter.TopLine(Lang.Text, w, CombatUiState.LocalId, CombatUiState.NameOf);
+        _sub!.text = ArenaHudFormatter.SubLine(Lang.Text, w, CombatUiState.LocalId, CombatUiState.Remaining());
         if (ReferenceEquals(w, _lastArena)) return;
-        if (w.Phase == ArenaPhase.Playing && _lastArena?.Phase == ArenaPhase.Countdown) ShowBanner(HudFormatter.Go, BannerTone.Good);
-        else if (ArenaHudFormatter.BannerFor(_lastArena, w, CombatUiState.LocalId) is { } banner) ShowBanner(banner.Text, banner.Tone);
+        if (w.Phase == ArenaPhase.Playing && _lastArena?.Phase == ArenaPhase.Countdown) ShowBanner(Lang.Text.Go, BannerTone.Good);
+        else if (ArenaHudFormatter.BannerFor(Lang.Text, _lastArena, w, CombatUiState.LocalId) is { } banner) ShowBanner(banner.Text, banner.Tone);
         _lastArena = w;
     }
 
@@ -95,7 +95,7 @@ internal sealed class CombatHud : NativeScreen
             : CombatSession.ArenaDisplay?.Phase == ArenaPhase.Preparing;
         if (preparing)
         {
-            _countdown!.text = "<size=50%>Préparation de l'île…</size>";
+            _countdown!.text = $"<size=50%>{Lang.Text.PreparingIsland}</size>";
             _countdown.transform.localScale = Vector3.one;
             _countdown.alpha = 1f;
             return;

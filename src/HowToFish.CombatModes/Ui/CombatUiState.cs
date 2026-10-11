@@ -28,7 +28,7 @@ internal static class CombatUiState
         && CombatSession.ArenaDisplay.Players.Any(p => p.SteamId == LocalId && p.Alive);
 
     public static string NameOf(ulong id) =>
-        id == ArenaHost.BotId ? "Bot"
+        id == ArenaHost.BotId ? Lang.Text.Bot
         : id == LocalId ? SteamFriends.GetPersonaName()
         : SteamFriends.GetFriendPersonaName(new CSteamID(id));
 
@@ -37,7 +37,7 @@ internal static class CombatUiState
         get
         {
             var opponent = CombatLobby.Opponent();
-            return opponent == CSteamID.Nil ? "Adversaire" : SteamFriends.GetFriendPersonaName(opponent);
+            return opponent == CSteamID.Nil ? Lang.Text.Opponent : SteamFriends.GetFriendPersonaName(opponent);
         }
     }
 

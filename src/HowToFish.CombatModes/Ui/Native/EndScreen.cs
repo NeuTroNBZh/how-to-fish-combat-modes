@@ -61,11 +61,11 @@ internal sealed class EndScreen : NativeScreen
         if (s == null) return;
         var local = CombatSession.LocalSide;
         var panel = GameUiKit.Panel(layer, new Vector2(700, 360)).transform;
-        GameUiKit.Fit(GameUiKit.Label(panel, HudFormatter.MatchBanner(s, local), 56, ToneColors.Of(HudFormatter.MatchTone(s, local))), 90);
+        GameUiKit.Fit(GameUiKit.Label(panel, HudFormatter.MatchBanner(Lang.Text, s, local), 56, ToneColors.Of(HudFormatter.MatchTone(s, local))), 90);
         var score = HudFormatter.ScoreLine(s, local, CombatUiState.NameOf(CombatUiState.LocalId), CombatUiState.OpponentName);
         GameUiKit.Fit(GameUiKit.Label(panel, score, 30, GameUiKit.TextColor), 50);
-        GameUiKit.Fit(GameUiKit.Button(panel, "Revanche", CombatActions.Replay), 64);
-        GameUiKit.Fit(GameUiKit.Button(panel, "Quitter", CombatActions.Quit), 64);
+        GameUiKit.Fit(GameUiKit.Button(panel, Lang.Text.Rematch, CombatActions.Replay), 64);
+        GameUiKit.Fit(GameUiKit.Button(panel, Lang.Text.Quit, CombatActions.Quit), 64);
     }
 
     private static void BuildArena(RectTransform layer)
@@ -75,24 +75,24 @@ internal sealed class EndScreen : NativeScreen
         var ranking = ArenaHudFormatter.Ranking(w);
         var panel = GameUiKit.Panel(layer, new Vector2(760, 330 + ranking.Count * RowHeight)).transform;
         var tone = w.Winner == CombatUiState.LocalId ? BannerTone.Good : BannerTone.Neutral;
-        GameUiKit.Fit(GameUiKit.Label(panel, ArenaHudFormatter.EndBanner(w, CombatUiState.LocalId, CombatUiState.NameOf), 52, ToneColors.Of(tone)), 84);
+        GameUiKit.Fit(GameUiKit.Label(panel, ArenaHudFormatter.EndBanner(Lang.Text, w, CombatUiState.LocalId, CombatUiState.NameOf), 52, ToneColors.Of(tone)), 84);
         for (int i = 0; i < ranking.Count; i++)
         {
             var color = ranking[i].SteamId == CombatUiState.LocalId ? GameInfo.GreenColor : GameUiKit.TextColor;
-            GameUiKit.Fit(GameUiKit.Label(panel, ArenaHudFormatter.Row(i + 1, ranking[i], w.Mode, CombatUiState.NameOf), 26, color), RowHeight);
+            GameUiKit.Fit(GameUiKit.Label(panel, ArenaHudFormatter.Row(Lang.Text, i + 1, ranking[i], w.Mode, CombatUiState.NameOf), 26, color), RowHeight);
         }
         AddReplay(panel, w.Players.Count >= ArenaRules.MinPlayers);
-        GameUiKit.Fit(GameUiKit.Button(panel, "Quitter", CombatActions.Quit), 64);
+        GameUiKit.Fit(GameUiKit.Button(panel, Lang.Text.Quit, CombatActions.Quit), 64);
     }
 
     private static void AddReplay(Transform panel, bool enoughPlayers)
     {
         if (!CombatSession.IsHost)
         {
-            GameUiKit.Fit(GameUiKit.Label(panel, "En attente de l'hôte…", 24, GameInfo.OrangeColor), 40);
+            GameUiKit.Fit(GameUiKit.Label(panel, Lang.Text.WaitingForHost, 24, GameInfo.OrangeColor), 40);
             return;
         }
-        var replay = GameUiKit.Button(panel, "Rejouer", CombatActions.Replay);
+        var replay = GameUiKit.Button(panel, Lang.Text.PlayAgain, CombatActions.Replay);
         replay.interactable = enoughPlayers;
         GameUiKit.Fit(replay, 64);
     }

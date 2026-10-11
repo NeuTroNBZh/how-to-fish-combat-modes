@@ -33,7 +33,7 @@ internal sealed class ScoreboardScreen : NativeScreen
     {
         var rows = Rows();
         var panel = GameUiKit.Panel(layer, new Vector2(720, 130 + rows.Count * RowHeight)).transform;
-        GameUiKit.Fit(GameUiKit.Label(panel, CombatUiState.IsDuel ? "DUEL 1V1" : "CLASSEMENT", 40, GameUiKit.TextColor), 60);
+        GameUiKit.Fit(GameUiKit.Label(panel, CombatUiState.IsDuel ? Lang.Text.DuelTitle : Lang.Text.Scoreboard, 40, GameUiKit.TextColor), 60);
         foreach (var row in rows) GameUiKit.Fit(GameUiKit.Label(panel, row.Text, 26, row.Color), RowHeight);
     }
 
@@ -43,13 +43,13 @@ internal sealed class ScoreboardScreen : NativeScreen
         {
             var s = CombatSession.Display;
             if (s == null) return new List<(string, Color)>();
-            var lines = HudFormatter.ScoreboardRows(s, CombatSession.LocalSide, CombatUiState.NameOf(CombatUiState.LocalId), CombatUiState.OpponentName);
+            var lines = HudFormatter.ScoreboardRows(Lang.Text, s, CombatSession.LocalSide, CombatUiState.NameOf(CombatUiState.LocalId), CombatUiState.OpponentName);
             return lines.Select((text, i) => (text, i == 0 ? GameInfo.GreenColor : GameUiKit.TextColor)).ToList();
         }
         var w = CombatSession.ArenaDisplay;
         if (w == null) return new List<(string, Color)>();
         var ranking = ArenaHudFormatter.Ranking(w);
-        return ranking.Select((p, i) => (ArenaHudFormatter.Row(i + 1, p, w.Mode, CombatUiState.NameOf),
+        return ranking.Select((p, i) => (ArenaHudFormatter.Row(Lang.Text, i + 1, p, w.Mode, CombatUiState.NameOf),
             p.SteamId == CombatUiState.LocalId ? GameInfo.GreenColor : GameUiKit.TextColor)).ToList();
     }
 }

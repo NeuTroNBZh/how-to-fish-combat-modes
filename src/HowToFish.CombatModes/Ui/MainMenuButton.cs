@@ -12,7 +12,6 @@ namespace HowToFish.CombatModes.Ui;
 internal sealed class MainMenuButton : MonoBehaviour
 {
     private const string TemplateMethod = "QuitButton";
-    private const string ButtonLabel = "Mods de combat";
     private const float PanelWidth = 440f;
     private const float PanelHeight = 380f;
     private const int WindowId = 0x0D0E1;
@@ -41,7 +40,7 @@ internal sealed class MainMenuButton : MonoBehaviour
             yield break;
         }
         _button = CloneButton(template);
-        CombatModesPlugin.Log.LogInfo($"Bouton {ButtonLabel} ajouté au menu ({template.transform.parent.name})");
+        CombatModesPlugin.Log.LogInfo($"Bouton {Lang.Text.CombatModes} ajouté au menu ({template.transform.parent.name})");
     }
 
     private GameObject CloneButton(Button template)
@@ -53,7 +52,7 @@ internal sealed class MainMenuButton : MonoBehaviour
                      .Where(c => c.GetType().Name.Contains("Locali")))
             Destroy(component);
         var label = clone.GetComponentInChildren<TMP_Text>(true);
-        if (label != null) label.text = ButtonLabel;
+        if (label != null) label.text = Lang.Text.CombatModes;
         var button = clone.GetComponent<Button>();
         button.onClick = new Button.ButtonClickedEvent();
         button.onClick.AddListener(OnButton);
@@ -81,22 +80,22 @@ internal sealed class MainMenuButton : MonoBehaviour
             _panelOpen = false;
             return;
         }
-        if (_useFallbackButton && GUI.Button(new Rect(20, Screen.height - 80, 220, 50), ButtonLabel)) Open();
+        if (_useFallbackButton && GUI.Button(new Rect(20, Screen.height - 80, 220, 50), Lang.Text.CombatModes)) Open();
         if (!_panelOpen) return;
         var rect = new Rect((Screen.width - PanelWidth) / 2, (Screen.height - PanelHeight) / 2, PanelWidth, PanelHeight);
-        GUI.Window(WindowId, rect, DrawPanel, ButtonLabel.ToUpperInvariant());
+        GUI.Window(WindowId, rect, DrawPanel, Lang.Text.CombatModes.ToUpperInvariant());
     }
 
     private void DrawPanel(int id)
     {
         GUILayout.Space(20);
-        if (!CombatSession.IsCompatible) GUILayout.Label("Mod incompatible avec cette version du jeu.");
+        if (!CombatSession.IsCompatible) GUILayout.Label(Lang.Text.Incompatible);
         else if (CombatSession.IsSearching) DrawSearching();
         else if (_mode is GameMode mode) DrawLaunch(mode);
         else DrawModes();
         if (Time.time <= CombatSession.NoticeUntil && CombatSession.Notice.Length > 0) GUILayout.Label(CombatSession.Notice);
         GUILayout.FlexibleSpace();
-        if (!CombatSession.IsSearching && GUILayout.Button("Retour", GUILayout.Height(40))) Back();
+        if (!CombatSession.IsSearching && GUILayout.Button(Lang.Text.Back, GUILayout.Height(40))) Back();
     }
 
     private void Back()
@@ -109,18 +108,18 @@ internal sealed class MainMenuButton : MonoBehaviour
     {
         foreach (var mode in GameModes.All)
         {
-            if (GUILayout.Button(GameModes.Label(mode), GUILayout.Height(55))) _mode = mode;
+            if (GUILayout.Button(Lang.Text.ModeLabel(mode), GUILayout.Height(55))) _mode = mode;
             GUILayout.Space(6);
         }
     }
 
     private void DrawLaunch(GameMode mode)
     {
-        GUILayout.Label(GameModes.Label(mode));
+        GUILayout.Label(Lang.Text.ModeLabel(mode));
         GUILayout.Space(6);
-        if (GUILayout.Button("Inviter des amis", GUILayout.Height(55))) AfterLaunch(CombatLaunch.Launch(mode, quickMatch: false));
+        if (GUILayout.Button(Lang.Text.InviteFriends, GUILayout.Height(55))) AfterLaunch(CombatLaunch.Launch(mode, quickMatch: false));
         GUILayout.Space(10);
-        if (GUILayout.Button("Partie rapide", GUILayout.Height(55))) AfterLaunch(CombatLaunch.Launch(mode, quickMatch: true));
+        if (GUILayout.Button(Lang.Text.QuickMatch, GUILayout.Height(55))) AfterLaunch(CombatLaunch.Launch(mode, quickMatch: true));
     }
 
     private void AfterLaunch(bool started)
@@ -132,9 +131,9 @@ internal sealed class MainMenuButton : MonoBehaviour
 
     private static void DrawSearching()
     {
-        GUILayout.Label($"Recherche d'un salon {GameModes.Label(CombatSession.Mode)}…");
+        GUILayout.Label(Lang.Text.SearchingLobby(Lang.Text.ModeLabel(CombatSession.Mode)));
         GUILayout.Space(10);
-        if (GUILayout.Button("Annuler", GUILayout.Height(40))) CombatLobby.Instance?.CancelSearch();
+        if (GUILayout.Button(Lang.Text.Cancel, GUILayout.Height(40))) CombatLobby.Instance?.CancelSearch();
     }
 
 }

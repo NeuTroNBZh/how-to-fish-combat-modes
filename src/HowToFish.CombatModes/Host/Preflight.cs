@@ -26,7 +26,7 @@ internal static class Preflight
         foreach (var item in missing) CombatModesPlugin.Log.LogWarning($"Arme de l'échelle inconnue, retirée : {item}");
         if (ladder == null)
         {
-            error = "Échelle d'armes invalide dans htf.combatmodes.cfg (2 niveaux minimum, le dernier doit être knife)";
+            error = Ui.Lang.Text.InvalidLadder;
             CombatModesPlugin.Log.LogError(error);
             return false;
         }
@@ -45,7 +45,7 @@ internal static class Preflight
             error = "";
             return true;
         }
-        error = "Aucun kit d'armes valide dans htf.combatmodes.cfg (voir le log)";
+        error = Ui.Lang.Text.NoValidKits;
         CombatModesPlugin.Log.LogError(error);
         return false;
     }

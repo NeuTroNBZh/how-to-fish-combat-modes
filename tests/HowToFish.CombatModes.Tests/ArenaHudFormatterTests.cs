@@ -34,7 +34,7 @@ public class ArenaHudFormatterTests
     {
         var w = Wire(GameMode.Deathmatch, new ArenaWirePlayer(1, 3, 0, 0, true), new ArenaWirePlayer(2, 8, 0, 0, true));
 
-        Assert.Equal("Toi : 3  ·  Leader : Bob 8", ArenaHudFormatter.TopLine(w, 1, Name));
+        Assert.Equal("Toi : 3  ·  Leader : Bob 8", ArenaHudFormatter.TopLine(UiText.French, w, 1, Name));
     }
 
     [Fact]
@@ -42,7 +42,7 @@ public class ArenaHudFormatterTests
     {
         var w = Wire(GameMode.Deathmatch, new ArenaWirePlayer(1, 0, 0, 0, true));
 
-        Assert.Equal("1:05  ·  Kit : smg+knife", ArenaHudFormatter.SubLine(w, 1, 65));
+        Assert.Equal("1:05  ·  Kit : smg+knife", ArenaHudFormatter.SubLine(UiText.French, w, 1, 65));
     }
 
     [Fact]
@@ -50,14 +50,14 @@ public class ArenaHudFormatterTests
     {
         var w = Wire(GameMode.GunGame, new ArenaWirePlayer(1, 0, 0, 0, true));
 
-        Assert.Equal("Niveau 1/3 : pistol, ensuite smg", ArenaHudFormatter.SubLine(w, 1, 0));
+        Assert.Equal("Niveau 1/3 : pistol, ensuite smg", ArenaHudFormatter.SubLine(UiText.French, w, 1, 0));
     }
 
     [Fact]
     public void LevelLine_LastLevel_AnnouncesKnifeFinish()
     {
         Assert.Equal("Niveau 3/3 : couteau, un kill pour gagner",
-            ArenaHudFormatter.LevelLine(new[] { "pistol", "smg", "knife" }, 2));
+            ArenaHudFormatter.LevelLine(UiText.French, new[] { "pistol", "smg", "knife" }, 2));
     }
 
     [Fact]
@@ -65,8 +65,8 @@ public class ArenaHudFormatterTests
     {
         var w = Wire(GameMode.Deathmatch) with { Phase = ArenaPhase.Ended, Winner = 2 };
 
-        Assert.Equal("BOB GAGNE", ArenaHudFormatter.EndBanner(w, 1, Name));
-        Assert.Equal("VICTOIRE", ArenaHudFormatter.EndBanner(w, 2, Name));
+        Assert.Equal("BOB GAGNE", ArenaHudFormatter.EndBanner(UiText.French, w, 1, Name));
+        Assert.Equal("VICTOIRE", ArenaHudFormatter.EndBanner(UiText.French, w, 2, Name));
     }
 
     [Fact]
@@ -74,8 +74,8 @@ public class ArenaHudFormatterTests
     {
         var p = new ArenaWirePlayer(2, 4, 1, 1, true);
 
-        Assert.Equal("1. Bob — 4 kills / 1 morts", ArenaHudFormatter.Row(1, p, GameMode.Deathmatch, Name));
-        Assert.Equal("2. Bob — niveau 2 — 4 kills", ArenaHudFormatter.Row(2, p, GameMode.GunGame, Name));
+        Assert.Equal("1. Bob — 4 kills / 1 morts", ArenaHudFormatter.Row(UiText.French, 1, p, GameMode.Deathmatch, Name));
+        Assert.Equal("2. Bob — niveau 2 — 4 kills", ArenaHudFormatter.Row(UiText.French, 2, p, GameMode.GunGame, Name));
     }
 }
 

@@ -97,7 +97,7 @@ internal sealed class ArenaHost : MonoBehaviour
         {
             CombatSession.LockLobby();
             SteamMatchmaking.SetLobbyJoinable(CombatSession.LobbyId, false);
-            CombatSession.ShowNotice($"{error} — partie impossible, retourne au menu", Time.time, PermanentNoticeSeconds);
+            CombatSession.ShowNotice(Ui.Lang.Text.MatchImpossible(error), Time.time, PermanentNoticeSeconds);
             return false;
         }
         CombatSession.UseArenaSettings(settings);
@@ -132,7 +132,7 @@ internal sealed class ArenaHost : MonoBehaviour
         }
         if (Time.time - since < DuelSettings.HelloTimeoutSeconds) return;
         CombatModesPlugin.Log.LogWarning($"{player.SteamName} n'a pas le mod, expulsion");
-        CombatSession.ShowNotice($"{player.SteamName} n'a pas le mod de combat", Time.time);
+        CombatSession.ShowNotice(Ui.Lang.Text.PlayerWithoutMod(player.SteamName), Time.time);
         ConnectionManager.Instance.KickSteamUserIfConnected(new CSteamID(player.SteamID));
         _firstSeen.Remove(player.SteamID);
     }

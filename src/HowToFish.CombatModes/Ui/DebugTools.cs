@@ -25,7 +25,7 @@ internal sealed class DebugTools : MonoBehaviour
             var p = Player.LocalPlayer.Transform.position;
             var text = FormattableString.Invariant($"{p.x:F1},{p.y:F1},{p.z:F1}");
             CombatModesPlugin.Log.LogInfo($"Position : {text}");
-            CombatSession.ShowNotice($"Position : {text}", Time.time);
+            CombatSession.ShowNotice(Lang.Text.Position(text), Time.time);
         }
         if (!CombatSession.Settings.DebugSolo) return;
         if (keyboard.f10Key.wasPressedThisFrame)

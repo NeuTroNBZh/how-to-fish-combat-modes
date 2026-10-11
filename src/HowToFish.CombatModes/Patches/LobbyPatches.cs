@@ -32,7 +32,7 @@ internal static class TagDuelLobbyPatch
         {
             CombatModesPlugin.Log.LogError($"Création du lobby duel refusée par Steam : {callback.m_eResult}");
             CombatSession.Reset();
-            CombatSession.ShowNotice("Steam a refusé la création du lobby duel", UnityEngine.Time.time);
+            CombatSession.ShowNotice(Ui.Lang.Text.SteamRefusedLobby, UnityEngine.Time.time);
             return;
         }
         CombatLobby.OnDuelLobbyCreated(new CSteamID(callback.m_ulSteamIDLobby));

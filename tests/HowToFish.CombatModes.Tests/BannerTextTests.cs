@@ -28,7 +28,7 @@ public class BannerTextTests
     [Fact]
     public void ScoreboardRows_Duel_ShowsBothPlayersAndRound()
     {
-        var rows = HudFormatter.ScoreboardRows(Duel(), Side.Guest, "Moi", "Bob");
+        var rows = HudFormatter.ScoreboardRows(UiText.French, Duel(), Side.Guest, "Moi", "Bob");
 
         Assert.Equal(new[] { "Moi — 1 manche", "Bob — 3 manches", "Manche 4  ·  Kit : smg+knife" }, rows);
     }
@@ -42,7 +42,7 @@ public class BannerTextTests
         var before = Arena(GameMode.Deathmatch, ArenaPhase.Playing, new ArenaWirePlayer(1, 2, 0, 0, true));
         var after = Arena(GameMode.Deathmatch, ArenaPhase.Playing, new ArenaWirePlayer(1, 3, 0, 0, true));
 
-        Assert.Equal(("KILL", BannerTone.Good), ArenaHudFormatter.BannerFor(before, after, 1));
+        Assert.Equal(("KILL", BannerTone.Good), ArenaHudFormatter.BannerFor(UiText.French, before, after, 1));
     }
 
     [Fact]
@@ -51,7 +51,7 @@ public class BannerTextTests
         var before = Arena(GameMode.Deathmatch, ArenaPhase.Playing, new ArenaWirePlayer(1, 2, 0, 0, true));
         var after = Arena(GameMode.Deathmatch, ArenaPhase.Playing, new ArenaWirePlayer(1, 2, 1, 0, false));
 
-        Assert.Equal(("ÉLIMINÉ", BannerTone.Bad), ArenaHudFormatter.BannerFor(before, after, 1));
+        Assert.Equal(("ÉLIMINÉ", BannerTone.Bad), ArenaHudFormatter.BannerFor(UiText.French, before, after, 1));
     }
 
     [Fact]
@@ -61,8 +61,8 @@ public class BannerTextTests
         var after = Arena(GameMode.GunGame, ArenaPhase.Playing, new ArenaWirePlayer(1, 1, 0, 1, true));
         var last = Arena(GameMode.GunGame, ArenaPhase.Playing, new ArenaWirePlayer(1, 2, 0, 2, true));
 
-        Assert.Equal(("NIVEAU 2 : smg", BannerTone.Good), ArenaHudFormatter.BannerFor(before, after, 1));
-        Assert.Equal(("NIVEAU FINAL : couteau", BannerTone.Good), ArenaHudFormatter.BannerFor(after, last, 1));
+        Assert.Equal(("NIVEAU 2 : smg", BannerTone.Good), ArenaHudFormatter.BannerFor(UiText.French, before, after, 1));
+        Assert.Equal(("NIVEAU FINAL : couteau", BannerTone.Good), ArenaHudFormatter.BannerFor(UiText.French, after, last, 1));
     }
 
     [Fact]
@@ -71,9 +71,20 @@ public class BannerTextTests
         var playing = Arena(GameMode.Deathmatch, ArenaPhase.Playing, new ArenaWirePlayer(1, 2, 0, 0, true));
         var ended = Arena(GameMode.Deathmatch, ArenaPhase.Ended, new ArenaWirePlayer(1, 3, 0, 0, true));
 
-        Assert.Null(ArenaHudFormatter.BannerFor(playing, playing, 1));
-        Assert.Null(ArenaHudFormatter.BannerFor(null, playing, 1));
-        Assert.Null(ArenaHudFormatter.BannerFor(playing, ended, 1));
-        Assert.Null(ArenaHudFormatter.BannerFor(playing, playing, 99));
+        Assert.Null(ArenaHudFormatter.BannerFor(UiText.French, playing, playing, 1));
+        Assert.Null(ArenaHudFormatter.BannerFor(UiText.French, null, playing, 1));
+        Assert.Null(ArenaHudFormatter.BannerFor(UiText.French, playing, ended, 1));
+        Assert.Null(ArenaHudFormatter.BannerFor(UiText.French, playing, playing, 99));
+    }
+
+    [Fact]
+    public void Formatters_SpeakEnglishWithEnglishCatalog()
+    {
+        Assert.Equal("YOU WIN THE ROUND", HudFormatter.RoundBanner(UiText.English, Duel(Side.Host), Side.Host));
+        Assert.Equal(new[] { "Me — 1 round", "Bob — 3 rounds", "Round 4  ·  Kit: smg+knife" },
+            HudFormatter.ScoreboardRows(UiText.English, Duel(), Side.Guest, "Me", "Bob"));
+        var before = Arena(GameMode.GunGame, ArenaPhase.Playing, new ArenaWirePlayer(1, 0, 0, 0, true));
+        var after = Arena(GameMode.GunGame, ArenaPhase.Playing, new ArenaWirePlayer(1, 1, 0, 1, true));
+        Assert.Equal(("LEVEL 2: smg", BannerTone.Good), ArenaHudFormatter.BannerFor(UiText.English, before, after, 1));
     }
 }
