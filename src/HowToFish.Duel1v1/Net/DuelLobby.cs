@@ -210,6 +210,6 @@ internal sealed class DuelLobby : MonoBehaviour
     {
         if (!DuelSession.IsDuelLobby || !DuelSession.IsHost || update.m_ulSteamIDLobby != DuelSession.LobbyId.m_SteamID) return;
         int members = SteamMatchmaking.GetNumLobbyMembers(DuelSession.LobbyId);
-        SteamMatchmaking.SetLobbyJoinable(DuelSession.LobbyId, members < GameModes.MaxMembers(DuelSession.Mode));
+        SteamMatchmaking.SetLobbyJoinable(DuelSession.LobbyId, !DuelSession.IsLobbyLocked && members < GameModes.MaxMembers(DuelSession.Mode));
     }
 }

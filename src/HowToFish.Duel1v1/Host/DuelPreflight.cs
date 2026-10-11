@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using HowToFish.Duel1v1.Core;
 using HowToFish.Duel1v1.Core.Arena;
 
@@ -9,32 +10,18 @@ internal static class DuelPreflight
     public static bool TryValidate(DuelSettings settings, out DuelSettings validated, out string error)
     {
         validated = settings;
-        var kits = KitFilter.KeepAvailable(settings.Kits, GameActions.ItemExists, out var missing);
-        foreach (var item in missing) DuelPlugin.Log.LogWarning($"Objet de kit inconnu, kit ignoré : {item}");
-        if (kits.Count == 0)
-        {
-            error = "Aucun kit d'armes valide dans htf.duel1v1.cfg (voir le log)";
-            DuelPlugin.Log.LogError(error);
-            return false;
-        }
-
-        var island = settings.IslandIndex;
-        if (!GameActions.IsMainIsland(island))
-        {
-            DuelPlugin.Log.LogWarning($"IslandIndex={island} n'est pas une île principale, île {DuelSettings.DefaultIslandIndex} utilisée");
-            island = DuelSettings.DefaultIslandIndex;
-        }
-
-        var islands = settings.IslandRotation ? GameActions.MainIslands() : new[] { island };
+        if (!TryKits(settings, out var kits, out error)) return false;
+        var (island, islands) = ValidIslands(settings);
         validated = settings.WithKits(kits) with { IslandIndex = island, Islands = islands };
-        error = "";
         return true;
     }
 
-    public static bool TryValidateArena(ArenaSettings arena, DuelSettings duel, out ArenaSettings validated, out string error)
+    // La course à l'armement n'utilise pas les kits du duel : des kits invalides ne la bloquent pas.
+    public static bool TryValidateArena(
+        ArenaSettings arena, DuelSettings duel, GameMode mode, out ArenaSettings validated, out string error)
     {
         validated = arena;
-        if (!TryValidate(duel, out var shared, out error)) return false;
+        if (!TryKits(duel, out var kits, out error) && mode != GameMode.GunGame) return false;
         var ladder = arena.Ladder.KeepAvailable(GameActions.ItemExists, out var missing);
         foreach (var item in missing) DuelPlugin.Log.LogWarning($"Arme de l'échelle inconnue, retirée : {item}");
         if (ladder == null)
@@ -43,7 +30,34 @@ internal static class DuelPreflight
             DuelPlugin.Log.LogError(error);
             return false;
         }
-        validated = arena with { Ladder = ladder, Kits = shared.Kits, Islands = shared.Islands, RandomUpgrades = shared.RandomUpgrades };
+        var (_, islands) = ValidIslands(duel);
+        validated = arena with { Ladder = ladder, Kits = kits, Islands = islands, RandomUpgrades = duel.RandomUpgrades };
+        error = "";
         return true;
+    }
+
+    private static bool TryKits(DuelSettings settings, out IReadOnlyList<Kit> kits, out string error)
+    {
+        kits = KitFilter.KeepAvailable(settings.Kits, GameActions.ItemExists, out var missing);
+        foreach (var item in missing) DuelPlugin.Log.LogWarning($"Objet de kit inconnu, kit ignoré : {item}");
+        if (kits.Count > 0)
+        {
+            error = "";
+            return true;
+        }
+        error = "Aucun kit d'armes valide dans htf.duel1v1.cfg (voir le log)";
+        DuelPlugin.Log.LogError(error);
+        return false;
+    }
+
+    private static (int Island, IReadOnlyList<int> Islands) ValidIslands(DuelSettings settings)
+    {
+        var island = settings.IslandIndex;
+        if (!GameActions.IsMainIsland(island))
+        {
+            DuelPlugin.Log.LogWarning($"IslandIndex={island} n'est pas une île principale, île {DuelSettings.DefaultIslandIndex} utilisée");
+            island = DuelSettings.DefaultIslandIndex;
+        }
+        return (island, settings.IslandRotation ? GameActions.MainIslands() : new[] { island });
     }
 }

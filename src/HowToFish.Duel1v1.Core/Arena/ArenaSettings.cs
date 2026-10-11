@@ -14,7 +14,7 @@ public sealed record ArenaSettings(
     public const int MaxPlayers = GameModes.ArenaMaxMembers;
     public const double PrepareSeconds = 1.0;
     public const double KillCreditSeconds = 10.0;
-    public const string DefaultLadder = "assaultrifle;smg;shotgun;sniperrifle;bow;pistol;knife";
+    public const string DefaultLadder = "sniperrifle;assaultrifle;smg;shotgun;bow;pistol;knife";
 
     public static RawArenaSettings Defaults { get; } = new(20, 600, 120, 3, 2, DefaultLadder);
 

@@ -93,8 +93,9 @@ internal sealed class ArenaHost : MonoBehaviour
     {
         if (_settingsChecked) return _rules != null;
         _settingsChecked = true;
-        if (!DuelPreflight.TryValidateArena(DuelSession.ArenaSettings, DuelSession.Settings, out var settings, out var error))
+        if (!DuelPreflight.TryValidateArena(DuelSession.ArenaSettings, DuelSession.Settings, DuelSession.Mode, out var settings, out var error))
         {
+            DuelSession.LockLobby();
             SteamMatchmaking.SetLobbyJoinable(DuelSession.LobbyId, false);
             DuelSession.ShowNotice($"{error} — partie impossible, retourne au menu", Time.time, PermanentNoticeSeconds);
             return false;

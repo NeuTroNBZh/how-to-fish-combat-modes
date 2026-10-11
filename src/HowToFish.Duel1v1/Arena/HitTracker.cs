@@ -26,10 +26,12 @@ internal static class HitTracker
     public static void Record(Player victim, Player attacker, float now)
     {
         if (victim == null || attacker == null || victim == attacker) return;
+        ArenaHost.Instance?.OnHitDealt(attacker.SteamID);
+        // Les plombs arrivés après la mort ne doivent pas ré-armer un crédit de kill sur la victime.
+        if (ArenaHost.Instance == null || !ArenaHost.Instance.AllowsDamage(victim)) return;
         var held = attacker.Holding.HeldItem;
         var weapon = held != null ? ItemNames.KeyOf(held.name) : "";
         LastHits[victim.SteamID] = new Hit(attacker.SteamID, weapon, now);
-        ArenaHost.Instance?.OnHitDealt(attacker.SteamID);
     }
 
     public static Hit? TakeCredit(ulong victim, float now)

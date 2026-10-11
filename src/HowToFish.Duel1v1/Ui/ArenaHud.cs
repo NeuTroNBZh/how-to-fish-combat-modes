@@ -1,4 +1,6 @@
+using System.Linq;
 using HowToFish.Duel1v1.Arena;
+using HowToFish.Duel1v1.Host;
 using HowToFish.Duel1v1.Core;
 using HowToFish.Duel1v1.Core.Arena;
 using Steamworks;
@@ -12,7 +14,12 @@ internal sealed class ArenaHud : MonoBehaviour
     private const float ReferenceHeight = 1080f;
     private const float PanelWidth = 560f;
     private const float RowHeight = 34f;
+    private const float RefillWindow = 2f;
+    private const float RefillInterval = 0.5f;
     private bool _cursorFreed;
+    private bool _wasAlive;
+    private float _refillUntil;
+    private float _nextRefill;
     private GUIStyle? _top, _big, _banner, _row;
 
     private static ulong LocalId => SteamUser.GetSteamID().m_SteamID;
@@ -20,6 +27,7 @@ internal sealed class ArenaHud : MonoBehaviour
     // Le jeu reverrouille le curseur (retour de focus, fin de pause, clic) : on le relibère tant qu'il doit l'être.
     private void Update()
     {
+        RefillAfterSpawn(DuelSession.IsArenaLobby ? DuelSession.ArenaDisplay : null);
         var phase = DuelSession.IsArenaLobby ? DuelSession.ArenaDisplay?.Phase : null;
         bool free = phase is ArenaPhase.Lobby or ArenaPhase.Ended;
         if (free == _cursorFreed)
@@ -29,6 +37,26 @@ internal sealed class ArenaHud : MonoBehaviour
         }
         _cursorFreed = free;
         PlayerCamera.ToggleMouse(free);
+    }
+
+    // Les accessoires (chargeur étendu) arrivent après l'arme : on remplit le chargeur juste après chaque apparition.
+    private void RefillAfterSpawn(ArenaWire? w)
+    {
+        var me = w?.Players.FirstOrDefault(p => p.SteamId == LocalId);
+        bool alive = me is { Alive: true };
+        if (alive && !_wasAlive) _refillUntil = Time.time + RefillWindow;
+        _wasAlive = alive;
+        bool due = w?.Phase == ArenaPhase.Countdown || Time.time < _refillUntil;
+        if (!due || Time.time < _nextRefill || Player.LocalPlayer == null) return;
+        _nextRefill = Time.time + RefillInterval;
+        try
+        {
+            WeaponUpgrades.RefillLocalAmmo(Player.LocalPlayer);
+        }
+        catch (System.Exception ex)
+        {
+            DuelPlugin.Log.LogError($"Remplissage du chargeur impossible : {ex}");
+        }
     }
 
     private void OnGUI()
@@ -121,7 +149,12 @@ internal sealed class ArenaHud : MonoBehaviour
         GUI.Label(new Rect(0, 100, width, 100), ArenaHudFormatter.EndBanner(w, LocalId, NameOf), _banner);
         DrawScoreboard(w, width, 220);
         var y = 260 + w.Players.Count * RowHeight;
-        if (DuelSession.IsHost && GUI.Button(new Rect(width / 2 - 230, y, 210, 60), "Rejouer")) ArenaHost.Instance?.RequestStart();
+        if (DuelSession.IsHost)
+        {
+            GUI.enabled = w.Players.Count >= ArenaRules.MinPlayers;
+            if (GUI.Button(new Rect(width / 2 - 230, y, 210, 60), "Rejouer")) ArenaHost.Instance?.RequestStart();
+            GUI.enabled = true;
+        }
         if (GUI.Button(new Rect(width / 2 + 20, y, 210, 60), "Quitter")) Quit();
     }
 

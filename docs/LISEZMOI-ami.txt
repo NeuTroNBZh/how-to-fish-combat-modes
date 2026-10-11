@@ -19,8 +19,8 @@ Modes
 - Duel 1v1 : premier à 5 manches, 90 s par manche, kit et île aléatoires.
 - Mêlée générale : premier à 20 kills (ou meilleur score après 10 min), kit
   commun changé toutes les 2 min, réapparition après 3 s.
-- Course à l'armement : chaque kill donne l'arme suivante (fusil d'assaut, SMG,
-  fusil à pompe, sniper, arc, pistolet, couteau). Tué au couteau = un niveau
+- Course à l'armement : chaque kill donne l'arme suivante (sniper, fusil d'assaut, SMG,
+  fusil à pompe, arc, pistolet, couteau). Tué au couteau = un niveau
   en moins. Le premier kill au couteau au dernier niveau gagne.
 
 Tous les joueurs doivent avoir la même version du mod et du jeu.

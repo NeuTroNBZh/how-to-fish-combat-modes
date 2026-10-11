@@ -151,5 +151,5 @@ internal sealed class DuelMenu : MonoBehaviour
 
     private static bool Validate(GameMode mode, out string error) => mode == GameMode.Duel
         ? DuelPreflight.TryValidate(DuelSession.Settings, out _, out error)
-        : DuelPreflight.TryValidateArena(DuelSession.ArenaSettings, DuelSession.Settings, out _, out error);
+        : DuelPreflight.TryValidateArena(DuelSession.ArenaSettings, DuelSession.Settings, mode, out _, out error);
 }

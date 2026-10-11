@@ -16,6 +16,14 @@ public class GunGameLadderTests
     }
 
     [Fact]
+    public void DefaultLadder_StartsWithSniperThenStrongestWeapons()
+    {
+        var ladder = GunGameLadder.Parse(ArenaSettings.DefaultLadder, out _)!;
+
+        Assert.Equal(new[] { "sniperrifle", "assaultrifle", "smg", "shotgun", "bow", "pistol", "knife" }, ladder.Weapons);
+    }
+
+    [Fact]
     public void Parse_NormalizesCaseAndSpaces()
     {
         var ladder = GunGameLadder.Parse(" Pistol ; KNIFE ;", out _)!;

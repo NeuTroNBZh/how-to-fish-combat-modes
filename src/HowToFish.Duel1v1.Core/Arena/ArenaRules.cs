@@ -23,7 +23,7 @@ public sealed class ArenaRules
         ArenaJoin join => Join(s, join.Id, now),
         ArenaLeave leave => Leave(s, leave.Id),
         ArenaKill kill when s.Phase == ArenaPhase.Playing => OnKill(s, kill, now),
-        ArenaDeath death when s.Phase == ArenaPhase.Playing => OnDeath(s, death.Victim, now),
+        ArenaDeath death when s.Phase == ArenaPhase.Playing => OnDeath(s, death.Victim, now, penalize: true),
         ArenaHit hit => Unprotect(s, hit.Attacker),
         ArenaTick => OnTick(s, now),
         _ => Same(s),
@@ -116,17 +116,19 @@ public sealed class ArenaRules
         return Step(next, new Strip(id));
     }
 
-    private ArenaStep OnDeath(ArenaSnapshot s, ulong id, double now)
+    // Pénalité seulement pour une mort sans adversaire (chute, noyade, suicide) : un tueur parti ne doit rien coûter.
+    private ArenaStep OnDeath(ArenaSnapshot s, ulong id, double now, bool penalize)
     {
         if (s.Find(id) is not { Alive: true } p) return Same(s);
-        var dead = Dead(p, now) with { Kills = s.Mode == GameMode.Deathmatch ? p.Kills - 1 : p.Kills };
+        var dead = Dead(p, now) with { Kills = penalize && s.Mode == GameMode.Deathmatch ? p.Kills - 1 : p.Kills };
         return Step(s.WithPlayer(dead), new Strip(id));
     }
 
     private ArenaStep OnKill(ArenaSnapshot s, ArenaKill k, double now)
     {
+        if (k.Killer == k.Victim) return OnDeath(s, k.Victim, now, penalize: true);
         var killer = s.Find(k.Killer);
-        if (k.Killer == k.Victim || killer == null) return OnDeath(s, k.Victim, now);
+        if (killer == null) return OnDeath(s, k.Victim, now, penalize: false);
         if (s.Find(k.Victim) is not { Alive: true } victim) return Same(s);
         var actions = new List<ArenaAction> { new Strip(victim.SteamId) };
         var dead = Dead(victim, now);

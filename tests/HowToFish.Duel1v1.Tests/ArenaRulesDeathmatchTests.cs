@@ -127,6 +127,7 @@ public class ArenaRulesDeathmatchTests
 
         Assert.False(P(step.Snapshot, B).Alive);
         Assert.Equal(1, P(step.Snapshot, B).Deaths);
+        Assert.Equal(0, P(step.Snapshot, B).Kills);
     }
 
     [Fact]

@@ -16,6 +16,7 @@ internal static class DuelSession
     public static bool IsDuelLobby { get; private set; }
     public static bool IsHost { get; private set; }
     public static bool IsSearching { get; private set; }
+    public static bool IsLobbyLocked { get; private set; }
     public static ELobbyType? PendingLobbyType { get; private set; }
     public static CSteamID LobbyId { get; private set; } = CSteamID.Nil;
     public static DuelSnapshot Snapshot { get; set; } = DuelSnapshot.Initial;
@@ -63,6 +64,7 @@ internal static class DuelSession
         IsHost = isHost;
         LobbyId = lobby;
         Mode = mode;
+        IsLobbyLocked = false;
         PendingLobbyType = null;
         IsSearching = false;
         Snapshot = DuelSnapshot.Initial;
@@ -72,6 +74,9 @@ internal static class DuelSession
     }
 
     public static void SetSearching(bool searching) => IsSearching = searching;
+
+    // Réglages invalides : le salon reste fermé même quand un membre part.
+    public static void LockLobby() => IsLobbyLocked = true;
 
     public static void SetDisplay(WireState state, float receivedAt)
     {
@@ -93,6 +98,7 @@ internal static class DuelSession
 
     public static void Reset()
     {
+        IsLobbyLocked = false;
         IsDuelLobby = false;
         IsHost = false;
         IsSearching = false;

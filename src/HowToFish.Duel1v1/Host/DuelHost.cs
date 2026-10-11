@@ -82,6 +82,7 @@ internal sealed class DuelHost : MonoBehaviour
         _settingsChecked = true;
         if (!DuelPreflight.TryValidate(DuelSession.Settings, out var settings, out var error))
         {
+            DuelSession.LockLobby();
             SteamMatchmaking.SetLobbyJoinable(DuelSession.LobbyId, false);
             DuelSession.ShowNotice($"{error} — duel impossible, retourne au menu", Time.time, PermanentNoticeSeconds);
             return false;
