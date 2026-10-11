@@ -33,6 +33,7 @@ public sealed class DuelPlugin : BaseUnityPlugin
             Root.AddComponent<Net.DuelLobby>();
             Root.AddComponent<Net.DuelChannel>();
             Root.AddComponent<Host.DuelHost>();
+            Root.AddComponent<Arena.ArenaHost>();
             Root.AddComponent<Ui.DuelHud>();
             Root.AddComponent<Ui.DebugTools>();
         }

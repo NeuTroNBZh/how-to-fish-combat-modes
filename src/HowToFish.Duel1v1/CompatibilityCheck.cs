@@ -22,11 +22,13 @@ internal static class CompatibilityCheck
         (typeof(Item), "SetSyncedHolder"), (typeof(Item), "DestroyItem"),
         (typeof(ServerSettings), "ToggleFriendlyFire"), (typeof(PlayerCamera), "ToggleMouse"),
         (typeof(AchievementManager), "CheckAttachmentsAchievement"),
+        (typeof(Server), "RpcLogic___HitPlayer___2449261505"),
     };
 
     private static readonly (Type Type, string Name)[] Fields =
     {
         (typeof(PlayerDying), "_player"), (typeof(PlayerInventory), "_items"),
+        (typeof(PlayerVitals), "_player"),
         (typeof(Attachments), "_sights"), (typeof(Attachments), "_barrelAttachments"),
         (typeof(Attachments), "_bulletUpgrades"), (typeof(Attachments), "_quiverUpgrades"),
         (typeof(Attachments), "_extendedMagInfo"), (typeof(Attachments), "_laserSight"),

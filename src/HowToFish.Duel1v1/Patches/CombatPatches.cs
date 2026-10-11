@@ -1,12 +1,21 @@
 using HarmonyLib;
+using HowToFish.Duel1v1.Arena;
 using HowToFish.Duel1v1.Host;
+using UnityEngine;
 
 namespace HowToFish.Duel1v1.Patches;
 
 [HarmonyPatch(typeof(PlayerVitals), nameof(PlayerVitals.TakeDamage))]
 internal static class BlockDamageOutsideFightPatch
 {
-    private static bool Prefix() => !DuelSession.BlocksDamage;
+    private static readonly AccessTools.FieldRef<PlayerVitals, Player> PlayerOf =
+        AccessTools.FieldRefAccess<PlayerVitals, Player>("_player");
+
+    private static bool Prefix(PlayerVitals __instance)
+    {
+        if (DuelSession.IsHostingArena) return ArenaHost.Instance == null || ArenaHost.Instance.AllowsDamage(PlayerOf(__instance));
+        return !DuelSession.BlocksDamage;
+    }
 }
 
 // Les accessoires tirés au hasard ne doivent pas débloquer le succès « tous les accessoires ».
@@ -14,6 +23,16 @@ internal static class BlockDamageOutsideFightPatch
 internal static class NoAttachmentAchievementInDuelPatch
 {
     private static bool Prefix() => !DuelSession.IsDuelLobby;
+}
+
+// Logique serveur du ServerRpc HitPlayer : seul endroit où le jeu connaît l'attaquant (__5).
+[HarmonyPatch(typeof(Server), "RpcLogic___HitPlayer___2449261505")]
+internal static class TrackHitsPatch
+{
+    private static void Prefix(Player __0, Player __5)
+    {
+        if (DuelSession.IsHostingArena) HitTracker.Record(__0, __5, Time.time);
+    }
 }
 
 [HarmonyPatch(typeof(PlayerDying), nameof(PlayerDying.ServerDie))]
@@ -24,7 +43,8 @@ internal static class DetectDuelDeathPatch
 
     private static void Postfix(PlayerDying __instance)
     {
-        if (!DuelSession.IsHostingDuel) return;
-        DuelHost.Instance?.OnPlayerDied(PlayerOf(__instance));
+        var player = PlayerOf(__instance);
+        if (DuelSession.IsHostingDuel) DuelHost.Instance?.OnPlayerDied(player);
+        else if (DuelSession.IsHostingArena) ArenaHost.Instance?.OnPlayerDied(player);
     }
 }

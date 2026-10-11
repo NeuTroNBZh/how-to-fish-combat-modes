@@ -106,12 +106,18 @@ internal static class GameActions
 
     public static Vector3 ArenaCenter() => Island.IslandPos;
 
-    public static Vector3 Ground(Vector3 around)
+    public static Vector3 Ground(Vector3 around) => TryGround(around, out var ground) ? ground : around;
+
+    public static bool TryGround(Vector3 around, out Vector3 ground)
     {
         var origin = around + Vector3.up * GroundProbeHeight;
-        return Physics.Raycast(origin, Vector3.down, out var hit, GroundProbeDistance)
-            ? hit.point + Vector3.up
-            : around;
+        if (Physics.Raycast(origin, Vector3.down, out var hit, GroundProbeDistance))
+        {
+            ground = hit.point + Vector3.up;
+            return true;
+        }
+        ground = around;
+        return false;
     }
 
     public static Vector3 ToUnity(NVector3 v) => new(v.X, v.Y, v.Z);

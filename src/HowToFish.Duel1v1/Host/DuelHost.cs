@@ -18,8 +18,7 @@ internal sealed class DuelHost : MonoBehaviour
     public static DuelHost? Instance { get; private set; }
 
     private readonly List<Item> _givenItems = new();
-    private readonly Dictionary<string, Loadout> _roundLoadouts = new();
-    private readonly SystemRandomSource _upgradeRandom = new(new System.Random());
+    private readonly LoadoutCache _loadouts = new();
     private CSteamID _lobby = CSteamID.Nil;
     private DuelRules? _rules;
     private (SpawnPoint A, SpawnPoint B) _spawns;
@@ -196,7 +195,7 @@ internal sealed class DuelHost : MonoBehaviour
     private void PrepareRound()
     {
         Guarded("nettoyage des armes", DestroyGivenItems);
-        _roundLoadouts.Clear();
+        _loadouts.Clear();
         var kit = DuelSession.Snapshot.Kit!;
         foreach (var (player, side) in Participants())
         {
@@ -214,17 +213,9 @@ internal sealed class DuelHost : MonoBehaviour
         foreach (var item in missing) DuelPlugin.Log.LogWarning($"Objet introuvable au moment du don : {item}");
     }
 
-    // Un seul tirage par arme et par manche : tous les joueurs reçoivent les mêmes accessoires.
     private void ApplyRoundLoadout(string itemName, Item item)
     {
-        if (!DuelSession.Settings.RandomUpgrades) return;
-        if (!_roundLoadouts.TryGetValue(itemName, out var loadout))
-        {
-            loadout = UpgradeRoller.Roll(WeaponUpgrades.ReadOptions(item), _upgradeRandom);
-            _roundLoadouts[itemName] = loadout;
-            DuelPlugin.Log.LogInfo($"Accessoires {itemName} : {loadout}");
-        }
-        WeaponUpgrades.Apply(item, loadout);
+        if (DuelSession.Settings.RandomUpgrades) _loadouts.Apply(itemName, item);
     }
 
     private void DestroyGivenItems()
