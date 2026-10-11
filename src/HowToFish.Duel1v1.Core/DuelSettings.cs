@@ -32,12 +32,12 @@ public sealed record DuelSettings(
     {
         var w = new List<string>();
         var d = Defaults;
-        int island = InRange(nameof(raw.IslandIndex), raw.IslandIndex, 0, 255, d.IslandIndex, w);
+        int island = SettingRange.Int(nameof(raw.IslandIndex), raw.IslandIndex, 0, 255, d.IslandIndex, w);
         var settings = new DuelSettings(
-            InRange(nameof(raw.RoundsToWin), raw.RoundsToWin, 1, 15, d.RoundsToWin, w),
-            InRange(nameof(raw.RoundTimeSeconds), raw.RoundTimeSeconds, 15, 600, d.RoundTimeSeconds, w),
-            InRange(nameof(raw.CountdownSeconds), raw.CountdownSeconds, 0, 10, d.CountdownSeconds, w),
-            InRange(nameof(raw.ArenaRadius), raw.ArenaRadius, 10f, 500f, d.ArenaRadius, w),
+            SettingRange.Int(nameof(raw.RoundsToWin), raw.RoundsToWin, 1, 15, d.RoundsToWin, w),
+            SettingRange.Int(nameof(raw.RoundTimeSeconds), raw.RoundTimeSeconds, 15, 600, d.RoundTimeSeconds, w),
+            SettingRange.Int(nameof(raw.CountdownSeconds), raw.CountdownSeconds, 0, 10, d.CountdownSeconds, w),
+            SettingRange.Float(nameof(raw.ArenaRadius), raw.ArenaRadius, 10f, 500f, d.ArenaRadius, w),
             island,
             ParseKits(raw.Kits, w),
             ParseSpawn(nameof(raw.SpawnA), raw.SpawnA, w),
@@ -50,19 +50,7 @@ public sealed record DuelSettings(
         return settings;
     }
 
-    private static int InRange(string name, int value, int min, int max, int fallback, List<string> warnings)
-    {
-        if (value >= min && value <= max) return value;
-        warnings.Add($"{name}={value} hors limites [{min}-{max}], valeur par défaut {fallback} utilisée");
-        return fallback;
-    }
 
-    private static float InRange(string name, float value, float min, float max, float fallback, List<string> warnings)
-    {
-        if (value >= min && value <= max) return value;
-        warnings.Add($"{name}={value} hors limites [{min}-{max}], valeur par défaut {fallback} utilisée");
-        return fallback;
-    }
 
     private static IReadOnlyList<Kit> ParseKits(string text, List<string> warnings)
     {
