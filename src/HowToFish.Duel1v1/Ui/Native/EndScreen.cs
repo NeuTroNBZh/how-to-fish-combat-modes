@@ -50,7 +50,9 @@ internal sealed class EndScreen : NativeScreen
         rect.anchorMax = Vector2.one;
         rect.offsetMin = Vector2.zero;
         rect.offsetMax = Vector2.zero;
-        go.AddComponent<Image>().color = Dim;
+        var dim = go.AddComponent<Image>();
+        dim.color = Dim;
+        dim.raycastTarget = false;
     }
 
     private static void BuildDuel(RectTransform layer)

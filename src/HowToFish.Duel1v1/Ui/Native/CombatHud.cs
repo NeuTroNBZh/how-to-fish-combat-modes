@@ -97,6 +97,7 @@ internal sealed class CombatHud : NativeScreen
         {
             _countdown!.text = "<size=50%>Préparation de l'île…</size>";
             _countdown.transform.localScale = Vector3.one;
+            _countdown.alpha = 1f;
             return;
         }
         var remaining = CombatUiState.Remaining();

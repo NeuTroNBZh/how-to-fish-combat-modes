@@ -1,6 +1,7 @@
 using HarmonyLib;
 using HowToFish.Duel1v1.Core;
 using HowToFish.Duel1v1.Ui;
+using HowToFish.Duel1v1.Ui.Native;
 
 namespace HowToFish.Duel1v1.Patches;
 
@@ -20,4 +21,11 @@ internal static class BlockInputsOnCombatScreensPatch
         if (__result || __instance != Player.LocalPlayer) return;
         __result = CombatUiRules.BlocksInputs(CombatUiState.Screen);
     }
+}
+
+// Échap au menu principal ouvre la pause du jeu : dans notre sous-menu, il doit d'abord revenir en arrière.
+[HarmonyPatch(typeof(PauseManager), "PauseInput")]
+internal static class EscapeBacksOutOfCombatMenuPatch
+{
+    private static bool Prefix() => CombatMenuScreen.Instance == null || !CombatMenuScreen.Instance.HandleEscape();
 }

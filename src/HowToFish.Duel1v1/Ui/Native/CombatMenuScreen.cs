@@ -3,7 +3,6 @@ using HowToFish.Duel1v1.Core;
 using HowToFish.Duel1v1.Net;
 using TMPro;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 namespace HowToFish.Duel1v1.Ui.Native;
@@ -85,7 +84,14 @@ internal sealed class CombatMenuScreen : MonoBehaviour
             _built = key;
         }
         UpdateNotice();
-        if (!DuelSession.IsSearching && Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame) Back();
+    }
+
+    // Appelé par le patch de PauseManager.PauseInput : vrai si Échap a été consommé par ce sous-menu.
+    public bool HandleEscape()
+    {
+        if (_root == null || !_root.activeSelf || !MainMenuManager.IsInMenu) return false;
+        if (!DuelSession.IsSearching) Back();
+        return true;
     }
 
     private void Rebuild(Page page)

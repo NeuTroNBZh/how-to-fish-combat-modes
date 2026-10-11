@@ -20,9 +20,13 @@ internal abstract class NativeScreen : MonoBehaviour
     {
     }
 
+    // Le jeu masque ses propres canvas pendant la pause : on fait de même pour laisser le menu pause cliquable.
+    protected virtual bool ShowsDuringPause => false;
+
     private void Update()
     {
-        bool show = GameUiKit.HudReady && CombatUiState.InCombat && ShouldShow(CombatUiState.Screen);
+        bool show = GameUiKit.HudReady && CombatUiState.InCombat && ShouldShow(CombatUiState.Screen)
+            && (ShowsDuringPause || !PauseManager.IsPaused);
         if (!show)
         {
             if (_layer != null && _layer.gameObject.activeSelf) _layer.gameObject.SetActive(false);

@@ -11,6 +11,8 @@ internal sealed class NoticeScreen : NativeScreen
 
     protected override bool ShouldShow(CombatScreen screen) => Time.time <= DuelSession.NoticeUntil && DuelSession.Notice.Length > 0;
 
+    protected override bool ShowsDuringPause => true;
+
     protected override string Key() => "notice";
 
     protected override void Build(RectTransform layer)

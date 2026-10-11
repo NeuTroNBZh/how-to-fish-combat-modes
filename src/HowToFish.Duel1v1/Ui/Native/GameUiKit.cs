@@ -138,6 +138,7 @@ internal static class GameUiKit
         image.color = _panel.color;
         image.material = _panel.material;
         image.pixelsPerUnitMultiplier = _panel.pixelsPerUnitMultiplier;
+        image.raycastTarget = false;
         image.rectTransform.sizeDelta = size;
         var layout = go.AddComponent<VerticalLayoutGroup>();
         layout.padding = new RectOffset(32, 32, 28, 28);
@@ -147,6 +148,8 @@ internal static class GameUiKit
         layout.childControlHeight = true;
         layout.childForceExpandWidth = true;
         layout.childForceExpandHeight = false;
+        // La hauteur demandée n'est qu'un point de départ : le panneau grandit avec son contenu.
+        go.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
         return image;
     }
 

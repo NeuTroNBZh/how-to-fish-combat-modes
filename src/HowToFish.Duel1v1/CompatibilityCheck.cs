@@ -23,6 +23,7 @@ internal static class CompatibilityCheck
         (typeof(ServerSettings), "ToggleFriendlyFire"), (typeof(PlayerCamera), "ToggleMouse"),
         (typeof(AchievementManager), "CheckAttachmentsAchievement"),
         (typeof(PlayerThinking), "ThinkingInput"), (typeof(Player), "get_BlockInputs"),
+        (typeof(PauseManager), "PauseInput"),
         (typeof(Server), "RpcLogic___HitPlayer___2449261505"),
     };
 
