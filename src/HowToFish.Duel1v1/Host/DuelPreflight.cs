@@ -1,4 +1,5 @@
 using HowToFish.Duel1v1.Core;
+using HowToFish.Duel1v1.Core.Arena;
 
 namespace HowToFish.Duel1v1.Host;
 
@@ -27,6 +28,22 @@ internal static class DuelPreflight
         var islands = settings.IslandRotation ? GameActions.MainIslands() : new[] { island };
         validated = settings.WithKits(kits) with { IslandIndex = island, Islands = islands };
         error = "";
+        return true;
+    }
+
+    public static bool TryValidateArena(ArenaSettings arena, DuelSettings duel, out ArenaSettings validated, out string error)
+    {
+        validated = arena;
+        if (!TryValidate(duel, out var shared, out error)) return false;
+        var ladder = arena.Ladder.KeepAvailable(GameActions.ItemExists, out var missing);
+        foreach (var item in missing) DuelPlugin.Log.LogWarning($"Arme de l'échelle inconnue, retirée : {item}");
+        if (ladder == null)
+        {
+            error = "Échelle d'armes invalide dans htf.duel1v1.cfg (2 niveaux minimum, le dernier doit être knife)";
+            DuelPlugin.Log.LogError(error);
+            return false;
+        }
+        validated = arena with { Ladder = ladder, Kits = shared.Kits, Islands = shared.Islands, RandomUpgrades = shared.RandomUpgrades };
         return true;
     }
 }

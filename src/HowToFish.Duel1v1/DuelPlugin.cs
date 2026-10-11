@@ -18,9 +18,9 @@ public sealed class DuelPlugin : BaseUnityPlugin
     private void Awake()
     {
         Log = Logger;
-        var (settings, debugKey) = DuelConfigBinder.Load(Config, Log);
+        var (settings, arena, debugKey) = DuelConfigBinder.Load(Config, Log);
         var compatible = CompatibilityCheck.Run(Log);
-        DuelSession.Initialize(settings, debugKey, compatible);
+        DuelSession.Initialize(settings, arena, debugKey, compatible);
 
         Root = new GameObject("HowToFish.Duel1v1");
         DontDestroyOnLoad(Root);

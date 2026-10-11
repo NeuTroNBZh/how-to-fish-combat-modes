@@ -17,7 +17,7 @@ internal sealed class DuelHud : MonoBehaviour
 
     private void OnGUI()
     {
-        if (!DuelSession.IsDuelLobby) return;
+        if (!DuelSession.IsDuelLobby || DuelSession.Mode != GameMode.Duel) return;
         EnsureStyles();
         var scale = Screen.height / ReferenceHeight;
         GUI.matrix = Matrix4x4.Scale(new Vector3(scale, scale, 1f));
@@ -37,7 +37,7 @@ internal sealed class DuelHud : MonoBehaviour
     private void Update()
     {
         TrackPhase();
-        bool matchEnd = DuelSession.IsDuelLobby && DuelSession.Display?.Phase == DuelPhase.MatchEnd;
+        bool matchEnd = DuelSession.IsDuelLobby && DuelSession.Mode == GameMode.Duel && DuelSession.Display?.Phase == DuelPhase.MatchEnd;
         if (matchEnd == _cursorFreed) return;
         _cursorFreed = matchEnd;
         PlayerCamera.ToggleMouse(matchEnd);
@@ -47,7 +47,7 @@ internal sealed class DuelHud : MonoBehaviour
     // régulièrement et on remplit le chargeur (étendu ou non) pour partir plein.
     private void TrackPhase()
     {
-        var phase = DuelSession.IsDuelLobby ? DuelSession.Display?.Phase : null;
+        var phase = DuelSession.IsDuelLobby && DuelSession.Mode == GameMode.Duel ? DuelSession.Display?.Phase : null;
         if (phase is not (DuelPhase.Countdown or DuelPhase.Fighting) || Player.LocalPlayer == null)
         {
             _loadout = "";

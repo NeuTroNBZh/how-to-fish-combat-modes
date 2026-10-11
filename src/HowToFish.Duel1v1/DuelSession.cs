@@ -1,4 +1,5 @@
 using HowToFish.Duel1v1.Core;
+using HowToFish.Duel1v1.Core.Arena;
 using Steamworks;
 
 namespace HowToFish.Duel1v1;
@@ -8,8 +9,10 @@ internal static class DuelSession
     public const string SaveName = "__duel1v1";
 
     public static DuelSettings Settings { get; private set; } = DuelSettings.FromRaw(DuelSettings.Defaults, out _);
+    public static ArenaSettings ArenaSettings { get; private set; } = ArenaSettings.FromRaw(ArenaSettings.Defaults, Settings, out _);
     public static string DebugPositionKey { get; private set; } = "F9";
     public static bool IsCompatible { get; private set; }
+    public static GameMode Mode { get; private set; } = GameMode.Duel;
     public static bool IsDuelLobby { get; private set; }
     public static bool IsHost { get; private set; }
     public static bool IsSearching { get; private set; }
@@ -18,33 +21,54 @@ internal static class DuelSession
     public static DuelSnapshot Snapshot { get; set; } = DuelSnapshot.Initial;
     public static WireState? Display { get; private set; }
     public static float DisplayReceivedAt { get; private set; }
+    public static ArenaSnapshot ArenaSnapshot { get; set; } = ArenaSnapshot.Lobby(GameMode.Deathmatch);
+    public static ArenaWire? ArenaDisplay { get; private set; }
+    public static float ArenaDisplayReceivedAt { get; private set; }
     public static string Notice { get; private set; } = "";
     public static float NoticeUntil { get; private set; }
 
-    public static bool IsHostingDuel => IsDuelLobby && IsHost;
+    public static bool IsHostingDuel => IsDuelLobby && IsHost && Mode == GameMode.Duel;
+    public static bool IsHostingArena => IsDuelLobby && IsHost && Mode != GameMode.Duel;
+    public static bool IsArenaLobby => IsDuelLobby && Mode != GameMode.Duel;
     public static bool BlocksDamage => IsHostingDuel && !DuelRules.AllowsDamage(Snapshot, UnityEngine.Time.time);
     public static Side LocalSide => IsHost ? Side.Host : Side.Guest;
 
-    public static void Initialize(DuelSettings settings, string debugPositionKey, bool compatible)
+    public static void Initialize(DuelSettings settings, ArenaSettings arena, string debugPositionKey, bool compatible)
     {
         Settings = settings;
+        ArenaSettings = arena;
         DebugPositionKey = debugPositionKey;
         IsCompatible = compatible;
     }
 
     public static void UseSettings(DuelSettings settings) => Settings = settings;
 
-    public static void BeginHosting(ELobbyType lobbyType) => PendingLobbyType = lobbyType;
+    public static void UseArenaSettings(ArenaSettings settings) => ArenaSettings = settings;
 
-    public static void EnterDuelLobby(CSteamID lobby, bool isHost)
+    public static void BeginHosting(ELobbyType lobbyType, GameMode mode)
+    {
+        PendingLobbyType = lobbyType;
+        Mode = mode;
+    }
+
+    public static void BeginSearch(GameMode mode)
+    {
+        IsSearching = true;
+        Mode = mode;
+    }
+
+    public static void EnterDuelLobby(CSteamID lobby, bool isHost, GameMode mode)
     {
         IsDuelLobby = true;
         IsHost = isHost;
         LobbyId = lobby;
+        Mode = mode;
         PendingLobbyType = null;
         IsSearching = false;
         Snapshot = DuelSnapshot.Initial;
         Display = null;
+        ArenaSnapshot = ArenaSnapshot.Lobby(mode == GameMode.Duel ? GameMode.Deathmatch : mode);
+        ArenaDisplay = null;
     }
 
     public static void SetSearching(bool searching) => IsSearching = searching;
@@ -53,6 +77,12 @@ internal static class DuelSession
     {
         Display = state;
         DisplayReceivedAt = receivedAt;
+    }
+
+    public static void SetArenaDisplay(ArenaWire wire, float receivedAt)
+    {
+        ArenaDisplay = wire;
+        ArenaDisplayReceivedAt = receivedAt;
     }
 
     public static void ShowNotice(string text, float now, float seconds = 5f)
@@ -70,5 +100,7 @@ internal static class DuelSession
         LobbyId = CSteamID.Nil;
         Snapshot = DuelSnapshot.Initial;
         Display = null;
+        ArenaSnapshot = ArenaSnapshot.Lobby(GameMode.Deathmatch);
+        ArenaDisplay = null;
     }
 }

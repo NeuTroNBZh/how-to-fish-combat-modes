@@ -1,4 +1,5 @@
 using HarmonyLib;
+using HowToFish.Duel1v1.Core;
 using HowToFish.Duel1v1.Net;
 using Steamworks;
 
@@ -16,7 +17,7 @@ internal static class CreateDuelLobbyPatch
             DuelSession.Reset();
             return true;
         }
-        SteamMatchmaking.CreateLobby(type, DuelLobby.MaxMembers);
+        SteamMatchmaking.CreateLobby(type, GameModes.MaxMembers(DuelSession.Mode));
         return false;
     }
 }

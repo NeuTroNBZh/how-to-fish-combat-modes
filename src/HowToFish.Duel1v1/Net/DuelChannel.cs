@@ -1,6 +1,7 @@
 using System;
 using System.Text;
 using HowToFish.Duel1v1.Core;
+using HowToFish.Duel1v1.Core.Arena;
 using Steamworks;
 using UnityEngine;
 
@@ -17,12 +18,16 @@ internal sealed class DuelChannel : MonoBehaviour
 
     private void OnDestroy() => _chatMessage?.Dispose();
 
-    public static bool Send(DuelMessage message)
+    public static bool Send(DuelMessage message) => SendText(DuelCodec.Encode(message), message.Kind.ToString());
+
+    public static bool SendArena(ArenaWire wire) => SendText(ArenaCodec.Encode(wire), "ARENA");
+
+    private static bool SendText(string text, string label)
     {
         if (!DuelSession.IsDuelLobby) return false;
-        var bytes = Encoding.UTF8.GetBytes(DuelCodec.Encode(message));
+        var bytes = Encoding.UTF8.GetBytes(text);
         bool sent = SteamMatchmaking.SendLobbyChatMsg(DuelSession.LobbyId, bytes, bytes.Length);
-        if (!sent) DuelPlugin.Log.LogWarning($"Envoi du message {message.Kind} impossible");
+        if (!sent) DuelPlugin.Log.LogWarning($"Envoi du message {label} impossible");
         return sent;
     }
 
@@ -34,6 +39,11 @@ internal sealed class DuelChannel : MonoBehaviour
         if (type != EChatEntryType.k_EChatEntryTypeChatMsg || length <= 0) return;
 
         var text = Encoding.UTF8.GetString(_buffer, 0, length).TrimEnd('\0');
+        if (ArenaCodec.IsArena(text))
+        {
+            HandleArena(sender, text);
+            return;
+        }
         if (!text.StartsWith(DuelCodec.Prefix + "|", StringComparison.Ordinal)) return;
         if (!DuelCodec.TryDecode(text, out var message, out var error))
         {
@@ -41,6 +51,18 @@ internal sealed class DuelChannel : MonoBehaviour
             return;
         }
         Dispatch(sender, message!);
+    }
+
+    // Seul l'hôte (propriétaire du lobby) publie l'état de l'arène ; l'hôte n'écoute pas ses propres messages.
+    private static void HandleArena(CSteamID sender, string text)
+    {
+        if (!ArenaCodec.TryDecode(text, out var wire, out var error))
+        {
+            DuelPlugin.Log.LogWarning($"Message arène rejeté ({error})");
+            return;
+        }
+        if (DuelSession.IsHost || SteamMatchmaking.GetLobbyOwner(DuelSession.LobbyId) != sender) return;
+        DuelSession.SetArenaDisplay(wire!, Time.time);
     }
 
     private static void Dispatch(CSteamID sender, DuelMessage message)

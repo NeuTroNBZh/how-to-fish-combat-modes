@@ -96,9 +96,9 @@ internal sealed class DuelMenu : MonoBehaviour
 
     private void DrawChoices()
     {
-        if (GUILayout.Button("Inviter un ami", GUILayout.Height(60))) Launch(lobby => lobby.HostDuel(isPublic: false));
+        if (GUILayout.Button("Inviter un ami", GUILayout.Height(60))) Launch(lobby => lobby.Host(Core.GameMode.Duel, isPublic: false));
         GUILayout.Space(10);
-        if (GUILayout.Button("Partie rapide", GUILayout.Height(60))) Launch(lobby => lobby.StartQuickMatch());
+        if (GUILayout.Button("Partie rapide", GUILayout.Height(60))) Launch(lobby => lobby.StartQuickMatch(Core.GameMode.Duel));
     }
 
     private static void DrawSearching()

@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using HowToFish.Duel1v1.Core;
+using HowToFish.Duel1v1.Core.Arena;
 using Steamworks;
 using UnityEngine;
 
@@ -8,10 +10,10 @@ namespace HowToFish.Duel1v1.Net;
 
 internal sealed class DuelLobby : MonoBehaviour
 {
-    public const int MaxMembers = 2;
     public const string TagKey = "htf_duel";
     public const string TagValue = "1";
     public const string VersionKey = "htf_duel_ver";
+    public const string ModeKey = "htf_mode";
     private const string GameVersionKey = "version";
     private const float HelloInterval = 2f;
     private const float RescanInterval = 5f;
@@ -42,26 +44,27 @@ internal sealed class DuelLobby : MonoBehaviour
         _lobbyList?.Dispose();
     }
 
-    public void HostDuel(bool isPublic)
+    public void Host(GameMode mode, bool isPublic)
     {
-        DuelSession.BeginHosting(isPublic ? ELobbyType.k_ELobbyTypePublic : ELobbyType.k_ELobbyTypeFriendsOnly);
+        DuelSession.BeginHosting(isPublic ? ELobbyType.k_ELobbyTypePublic : ELobbyType.k_ELobbyTypeFriendsOnly, mode);
         SaveManager.OnServerLoaded();
         SaveManager.CreateServer(DuelSession.SaveName, useSteam: true, isPublic: isPublic, Difficulty.Default);
         SteamManager.CreateLobby();
-        DuelPlugin.Log.LogInfo($"Création d'un lobby duel (public={isPublic})");
+        DuelPlugin.Log.LogInfo($"Création d'un salon {GameModes.Tag(mode)} (public={isPublic})");
     }
 
-    public void StartQuickMatch()
+    public void StartQuickMatch(GameMode mode)
     {
-        DuelSession.SetSearching(true);
-        RequestOpenDuels();
+        DuelSession.BeginSearch(mode);
+        RequestOpenLobbies(mode);
     }
 
-    private void RequestOpenDuels()
+    private void RequestOpenLobbies(GameMode mode)
     {
         SteamMatchmaking.AddRequestLobbyListStringFilter(TagKey, TagValue, ELobbyComparison.k_ELobbyComparisonEqual);
         SteamMatchmaking.AddRequestLobbyListStringFilter(VersionKey, DuelPlugin.PluginVersion, ELobbyComparison.k_ELobbyComparisonEqual);
         SteamMatchmaking.AddRequestLobbyListStringFilter(GameVersionKey, Application.version, ELobbyComparison.k_ELobbyComparisonEqual);
+        SteamMatchmaking.AddRequestLobbyListStringFilter(ModeKey, GameModes.Tag(mode), ELobbyComparison.k_ELobbyComparisonEqual);
         SteamMatchmaking.AddRequestLobbyListFilterSlotsAvailable(1);
         SteamMatchmaking.AddRequestLobbyListDistanceFilter(ELobbyDistanceFilter.k_ELobbyDistanceFilterWorldwide);
         _lobbyList?.Set(SteamMatchmaking.RequestLobbyList());
@@ -76,13 +79,15 @@ internal sealed class DuelLobby : MonoBehaviour
     public static void OnDuelLobbyCreated(CSteamID lobby)
     {
         bool isPublic = DuelSession.PendingLobbyType == ELobbyType.k_ELobbyTypePublic;
+        var mode = DuelSession.Mode;
         SteamMatchmaking.SetLobbyData(lobby, TagKey, TagValue);
         SteamMatchmaking.SetLobbyData(lobby, VersionKey, DuelPlugin.PluginVersion);
-        SteamMatchmaking.SetLobbyMemberLimit(lobby, MaxMembers);
-        DuelSession.EnterDuelLobby(lobby, isHost: true);
+        SteamMatchmaking.SetLobbyData(lobby, ModeKey, GameModes.Tag(mode));
+        SteamMatchmaking.SetLobbyMemberLimit(lobby, GameModes.MaxMembers(mode));
+        DuelSession.EnterDuelLobby(lobby, isHost: true, mode);
         if (Instance != null) Instance._quickMatchLobby = isPublic ? lobby : CSteamID.Nil;
         if (!isPublic) SteamFriends.ActivateGameOverlayInviteDialog(lobby);
-        DuelPlugin.Log.LogInfo($"Lobby duel {lobby.m_SteamID} prêt");
+        DuelPlugin.Log.LogInfo($"Salon {GameModes.Tag(mode)} {lobby.m_SteamID} prêt");
     }
 
     public static CSteamID Opponent()
@@ -107,75 +112,84 @@ internal sealed class DuelLobby : MonoBehaviour
         if (!DuelSession.IsSearching) return;
         if (ioFailure || result.m_nLobbiesMatching == 0)
         {
-            DuelPlugin.Log.LogInfo("Aucun duel ouvert trouvé, création d'un lobby public");
-            HostDuel(isPublic: true);
+            DuelPlugin.Log.LogInfo("Aucun salon ouvert trouvé, création d'un salon public");
+            Host(DuelSession.Mode, isPublic: true);
             return;
         }
         var lobby = SteamMatchmaking.GetLobbyByIndex(0);
-        DuelPlugin.Log.LogInfo($"Duel trouvé : {lobby.m_SteamID}");
+        DuelPlugin.Log.LogInfo($"Salon trouvé : {lobby.m_SteamID}");
         SteamManager.JoinLobby(lobby.m_SteamID);
     }
 
-    private bool IsWaitingAloneInQuickMatch() =>
-        DuelSession.IsHostingDuel
-        && DuelSession.LobbyId == _quickMatchLobby
-        && DuelSession.Snapshot.Phase == DuelPhase.Waiting
-        && SteamMatchmaking.GetNumLobbyMembers(DuelSession.LobbyId) < MaxMembers;
+    private bool IsWaitingAloneInQuickMatch()
+    {
+        if (!DuelSession.IsDuelLobby || !DuelSession.IsHost || DuelSession.LobbyId != _quickMatchLobby) return false;
+        bool waiting = DuelSession.Mode == GameMode.Duel
+            ? DuelSession.Snapshot.Phase == DuelPhase.Waiting
+            : DuelSession.ArenaSnapshot.Phase == ArenaPhase.Lobby;
+        return waiting && SteamMatchmaking.GetNumLobbyMembers(DuelSession.LobbyId) == 1;
+    }
 
     private void TryMerge(LobbyMatchList_t result)
     {
         var open = new List<ulong>();
         for (int i = 0; i < result.m_nLobbiesMatching; i++) open.Add(SteamMatchmaking.GetLobbyByIndex(i).m_SteamID);
         if (QuickMatchPolicy.MergeTarget(DuelSession.LobbyId.m_SteamID, open) is not ulong target) return;
-        DuelPlugin.Log.LogInfo($"Autre duel en attente trouvé ({target}), on le rejoint");
-        StartCoroutine(MoveTo(target));
+        DuelPlugin.Log.LogInfo($"Autre salon en attente trouvé ({target}), on le rejoint");
+        StartCoroutine(MoveTo(target, DuelSession.Mode));
     }
 
-    private IEnumerator MoveTo(ulong lobby)
+    private IEnumerator MoveTo(ulong lobby, GameMode mode)
     {
         _quickMatchLobby = CSteamID.Nil;
         SteamManager.LeaveLobby(DisconnectReason.None);
-        DuelSession.SetSearching(true);
+        DuelSession.BeginSearch(mode);
         yield return new WaitForSeconds(MergeJoinDelay);
         SteamManager.JoinLobby(lobby);
     }
 
-    // Renvoi du HELLO tant que l'hôte n'a pas lancé le duel : un seul envoi peut arriver avant que l'hôte soit prêt.
     private void Update()
     {
         RescanWhileAlone();
-        if (!DuelSession.IsDuelLobby || DuelSession.IsHost) return;
-        var display = DuelSession.Display;
-        if (display != null && display.Phase != Core.DuelPhase.Waiting) return;
+        if (!DuelSession.IsDuelLobby || DuelSession.IsHost || !NeedsHello()) return;
         if (Time.time < _nextHello) return;
         _nextHello = Time.time + HelloInterval;
-        DuelChannel.Send(Core.DuelMessage.Hello());
+        DuelChannel.Send(DuelMessage.Hello());
+    }
+
+    // Renvoi du HELLO tant que l'hôte ne nous a pas pris en compte : un seul envoi peut arriver avant qu'il soit prêt.
+    private static bool NeedsHello()
+    {
+        if (DuelSession.Mode == GameMode.Duel)
+            return DuelSession.Display == null || DuelSession.Display.Phase == DuelPhase.Waiting;
+        var me = SteamUser.GetSteamID().m_SteamID;
+        return DuelSession.ArenaDisplay == null || DuelSession.ArenaDisplay.Players.All(p => p.SteamId != me);
     }
 
     private void RescanWhileAlone()
     {
         if (Time.time < _nextRescan || !IsWaitingAloneInQuickMatch()) return;
         _nextRescan = Time.time + RescanInterval;
-        RequestOpenDuels();
+        RequestOpenLobbies(DuelSession.Mode);
     }
 
     private void OnLobbyEntered(LobbyEnter_t callback)
     {
         if (callback.m_EChatRoomEnterResponse != 1)
         {
-            EndSearch("Ce duel n'est plus disponible, relance une partie rapide");
+            EndSearch("Ce salon n'est plus disponible, relance une partie rapide");
             return;
         }
         var lobby = new CSteamID(callback.m_ulSteamIDLobby);
         if (SteamMatchmaking.GetLobbyData(lobby, TagKey) != TagValue) return;
         if (SteamMatchmaking.GetLobbyData(lobby, GameVersionKey) != Application.version)
         {
-            EndSearch("Ce duel utilise une autre version du jeu");
+            EndSearch("Ce salon utilise une autre version du jeu");
             return;
         }
-        bool isHost = SteamMatchmaking.GetLobbyOwner(lobby) == SteamUser.GetSteamID();
-        if (isHost) return;
-        DuelSession.EnterDuelLobby(lobby, isHost: false);
+        if (SteamMatchmaking.GetLobbyOwner(lobby) == SteamUser.GetSteamID()) return;
+        var mode = GameModes.TryParseTag(SteamMatchmaking.GetLobbyData(lobby, ModeKey), out var parsed) ? parsed : GameMode.Duel;
+        DuelSession.EnterDuelLobby(lobby, isHost: false, mode);
         _nextHello = 0f;
     }
 
@@ -189,8 +203,8 @@ internal sealed class DuelLobby : MonoBehaviour
 
     private void OnMembersChanged(LobbyChatUpdate_t update)
     {
-        if (!DuelSession.IsHostingDuel || update.m_ulSteamIDLobby != DuelSession.LobbyId.m_SteamID) return;
+        if (!DuelSession.IsDuelLobby || !DuelSession.IsHost || update.m_ulSteamIDLobby != DuelSession.LobbyId.m_SteamID) return;
         int members = SteamMatchmaking.GetNumLobbyMembers(DuelSession.LobbyId);
-        SteamMatchmaking.SetLobbyJoinable(DuelSession.LobbyId, members < MaxMembers);
+        SteamMatchmaking.SetLobbyJoinable(DuelSession.LobbyId, members < GameModes.MaxMembers(DuelSession.Mode));
     }
 }
