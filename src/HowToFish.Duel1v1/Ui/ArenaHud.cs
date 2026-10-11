@@ -14,50 +14,7 @@ internal sealed class ArenaHud : MonoBehaviour
     private const float ReferenceHeight = 1080f;
     private const float PanelWidth = 560f;
     private const float RowHeight = 34f;
-    private const float RefillWindow = 2f;
-    private const float RefillInterval = 0.5f;
-    private bool _cursorFreed;
-    private bool _wasAlive;
-    private float _refillUntil;
-    private float _nextRefill;
     private GUIStyle? _top, _big, _banner, _row;
-
-    private static ulong LocalId => SteamUser.GetSteamID().m_SteamID;
-
-    // Le jeu reverrouille le curseur (retour de focus, fin de pause, clic) : on le relibère tant qu'il doit l'être.
-    private void Update()
-    {
-        RefillAfterSpawn(DuelSession.IsArenaLobby ? DuelSession.ArenaDisplay : null);
-        var phase = DuelSession.IsArenaLobby ? DuelSession.ArenaDisplay?.Phase : null;
-        bool free = phase is ArenaPhase.Lobby or ArenaPhase.Ended;
-        if (free == _cursorFreed)
-        {
-            if (free && Cursor.lockState != CursorLockMode.None) PlayerCamera.ToggleMouse(true);
-            return;
-        }
-        _cursorFreed = free;
-        PlayerCamera.ToggleMouse(free);
-    }
-
-    // Les accessoires (chargeur étendu) arrivent après l'arme : on remplit le chargeur juste après chaque apparition.
-    private void RefillAfterSpawn(ArenaWire? w)
-    {
-        var me = w?.Players.FirstOrDefault(p => p.SteamId == LocalId);
-        bool alive = me is { Alive: true };
-        if (alive && !_wasAlive) _refillUntil = Time.time + RefillWindow;
-        _wasAlive = alive;
-        bool due = w?.Phase == ArenaPhase.Countdown || Time.time < _refillUntil;
-        if (!due || Time.time < _nextRefill || Player.LocalPlayer == null) return;
-        _nextRefill = Time.time + RefillInterval;
-        try
-        {
-            WeaponUpgrades.RefillLocalAmmo(Player.LocalPlayer);
-        }
-        catch (System.Exception ex)
-        {
-            DuelPlugin.Log.LogError($"Remplissage du chargeur impossible : {ex}");
-        }
-    }
 
     private void OnGUI()
     {
@@ -102,16 +59,11 @@ internal sealed class ArenaHud : MonoBehaviour
 
     private static double Remaining(ArenaWire w) => w.RemainingMs / 1000.0 - (Time.time - DuelSession.ArenaDisplayReceivedAt);
 
-    private static string NameOf(ulong id) =>
-        id == ArenaHost.BotId ? "Bot"
-        : id == LocalId ? SteamFriends.GetPersonaName()
-        : SteamFriends.GetFriendPersonaName(new CSteamID(id));
-
     private void DrawTop(ArenaWire w, float width)
     {
         GUI.Box(new Rect(width / 2 - 320, 20, 640, 90), GUIContent.none);
-        GUI.Label(new Rect(width / 2 - 320, 25, 640, 45), ArenaHudFormatter.TopLine(w, LocalId, NameOf), _top);
-        GUI.Label(new Rect(width / 2 - 320, 65, 640, 40), ArenaHudFormatter.SubLine(w, LocalId, Remaining(w)), _row);
+        GUI.Label(new Rect(width / 2 - 320, 25, 640, 45), ArenaHudFormatter.TopLine(w, CombatUiState.LocalId, CombatUiState.NameOf), _top);
+        GUI.Label(new Rect(width / 2 - 320, 65, 640, 40), ArenaHudFormatter.SubLine(w, CombatUiState.LocalId, Remaining(w)), _row);
     }
 
     private void DrawLobby(ArenaWire w, float width)
@@ -120,19 +72,19 @@ internal sealed class ArenaHud : MonoBehaviour
         GUI.Box(new Rect(x, 200, PanelWidth, 160 + w.Players.Count * RowHeight), GUIContent.none);
         GUI.Label(new Rect(x, 210, PanelWidth, 40), $"SALON — {GameModes.Label(w.Mode)} ({w.Players.Count}/{ArenaSettings.MaxPlayers})", _top);
         for (int i = 0; i < w.Players.Count; i++)
-            GUI.Label(new Rect(x, 260 + i * RowHeight, PanelWidth, RowHeight), NameOf(w.Players[i].SteamId), _row);
+            GUI.Label(new Rect(x, 260 + i * RowHeight, PanelWidth, RowHeight), CombatUiState.NameOf(w.Players[i].SteamId), _row);
         var y = 270 + w.Players.Count * RowHeight;
         if (DuelSession.IsHost)
         {
             GUI.enabled = w.Players.Count >= ArenaRules.MinPlayers;
-            if (GUI.Button(new Rect(x + 40, y, 220, 50), "Lancer")) ArenaHost.Instance?.RequestStart();
+            if (GUI.Button(new Rect(x + 40, y, 220, 50), "Lancer")) CombatActions.Replay();
             GUI.enabled = true;
         }
         else
         {
             GUI.Label(new Rect(x + 20, y, 260, 50), "En attente de l'hôte…", _row);
         }
-        if (GUI.Button(new Rect(x + PanelWidth - 260, y, 220, 50), "Quitter")) Quit();
+        if (GUI.Button(new Rect(x + PanelWidth - 260, y, 220, 50), "Quitter")) CombatActions.Quit();
     }
 
     private void DrawScoreboard(ArenaWire w, float width, float y)
@@ -141,27 +93,21 @@ internal sealed class ArenaHud : MonoBehaviour
         var x = width / 2 - PanelWidth / 2;
         GUI.Box(new Rect(x, y, PanelWidth, 20 + ranking.Count * RowHeight), GUIContent.none);
         for (int i = 0; i < ranking.Count; i++)
-            GUI.Label(new Rect(x, y + 10 + i * RowHeight, PanelWidth, RowHeight), ArenaHudFormatter.Row(i + 1, ranking[i], w.Mode, NameOf), _row);
+            GUI.Label(new Rect(x, y + 10 + i * RowHeight, PanelWidth, RowHeight), ArenaHudFormatter.Row(i + 1, ranking[i], w.Mode, CombatUiState.NameOf), _row);
     }
 
     private void DrawEnd(ArenaWire w, float width)
     {
-        GUI.Label(new Rect(0, 100, width, 100), ArenaHudFormatter.EndBanner(w, LocalId, NameOf), _banner);
+        GUI.Label(new Rect(0, 100, width, 100), ArenaHudFormatter.EndBanner(w, CombatUiState.LocalId, CombatUiState.NameOf), _banner);
         DrawScoreboard(w, width, 220);
         var y = 260 + w.Players.Count * RowHeight;
         if (DuelSession.IsHost)
         {
             GUI.enabled = w.Players.Count >= ArenaRules.MinPlayers;
-            if (GUI.Button(new Rect(width / 2 - 230, y, 210, 60), "Rejouer")) ArenaHost.Instance?.RequestStart();
+            if (GUI.Button(new Rect(width / 2 - 230, y, 210, 60), "Rejouer")) CombatActions.Replay();
             GUI.enabled = true;
         }
-        if (GUI.Button(new Rect(width / 2 + 20, y, 210, 60), "Quitter")) Quit();
-    }
-
-    private static void Quit()
-    {
-        SteamManager.LeaveLobby(DisconnectReason.None);
-        MainMenuManager.ToggleMenu(enabled: true);
+        if (GUI.Button(new Rect(width / 2 + 20, y, 210, 60), "Quitter")) CombatActions.Quit();
     }
 
     private void DrawNotice(float width)

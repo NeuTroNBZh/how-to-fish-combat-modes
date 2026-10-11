@@ -22,6 +22,7 @@ internal static class CompatibilityCheck
         (typeof(Item), "SetSyncedHolder"), (typeof(Item), "DestroyItem"),
         (typeof(ServerSettings), "ToggleFriendlyFire"), (typeof(PlayerCamera), "ToggleMouse"),
         (typeof(AchievementManager), "CheckAttachmentsAchievement"),
+        (typeof(PlayerThinking), "ThinkingInput"), (typeof(Player), "get_BlockInputs"),
         (typeof(Server), "RpcLogic___HitPlayer___2449261505"),
     };
 

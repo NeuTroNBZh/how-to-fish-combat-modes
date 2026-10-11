@@ -36,6 +36,7 @@ public sealed class DuelPlugin : BaseUnityPlugin
             Root.AddComponent<Arena.ArenaHost>();
             Root.AddComponent<Ui.DuelHud>();
             Root.AddComponent<Ui.ArenaHud>();
+            Root.AddComponent<Ui.CombatControllers>();
             Root.AddComponent<Ui.DebugTools>();
         }
         else

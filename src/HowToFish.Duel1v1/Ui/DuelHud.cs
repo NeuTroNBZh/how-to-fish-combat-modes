@@ -9,10 +9,6 @@ namespace HowToFish.Duel1v1.Ui;
 internal sealed class DuelHud : MonoBehaviour
 {
     private const float ReferenceHeight = 1080f;
-    private bool _cursorFreed;
-    private const float LoadoutRefreshInterval = 0.5f;
-    private float _nextLoadoutRefresh;
-    private string _loadout = "";
     private GUIStyle? _top, _big, _banner, _small;
 
     private void OnGUI()
@@ -34,42 +30,6 @@ internal sealed class DuelHud : MonoBehaviour
         DrawCenter(s, width);
     }
 
-    private void Update()
-    {
-        TrackPhase();
-        bool matchEnd = DuelSession.IsDuelLobby && DuelSession.Mode == GameMode.Duel && DuelSession.Display?.Phase == DuelPhase.MatchEnd;
-        if (matchEnd == _cursorFreed)
-        {
-            if (matchEnd && Cursor.lockState != CursorLockMode.None) PlayerCamera.ToggleMouse(true);
-            return;
-        }
-        _cursorFreed = matchEnd;
-        PlayerCamera.ToggleMouse(matchEnd);
-    }
-
-    // Les accessoires arrivent par SyncVar après les armes : pendant le compte à rebours on relit
-    // régulièrement et on remplit le chargeur (étendu ou non) pour partir plein.
-    private void TrackPhase()
-    {
-        var phase = DuelSession.IsDuelLobby && DuelSession.Mode == GameMode.Duel ? DuelSession.Display?.Phase : null;
-        if (phase is not (DuelPhase.Countdown or DuelPhase.Fighting) || Player.LocalPlayer == null)
-        {
-            _loadout = "";
-            return;
-        }
-        if (Time.time < _nextLoadoutRefresh) return;
-        _nextLoadoutRefresh = Time.time + LoadoutRefreshInterval;
-        try
-        {
-            if (phase == DuelPhase.Countdown) WeaponUpgrades.RefillLocalAmmo(Player.LocalPlayer);
-            _loadout = WeaponUpgrades.Describe(Player.LocalPlayer);
-        }
-        catch (System.Exception ex)
-        {
-            DuelPlugin.Log.LogError($"Lecture des accessoires impossible : {ex}");
-        }
-    }
-
     private static double Remaining(WireState s) => s.RemainingMs / 1000.0 - (Time.time - DuelSession.DisplayReceivedAt);
 
     private void DrawTopBar(WireState s, float width)
@@ -80,7 +40,7 @@ internal sealed class DuelHud : MonoBehaviour
         GUI.Label(new Rect(width / 2 - 260, 25, 520, 45), line, _top);
         var info = $"Manche {s.Round} · {HudFormatter.Clock(Remaining(s))} · Kit : {s.KitName}";
         GUI.Label(new Rect(width / 2 - 260, 65, 520, 40), info, _top);
-        if (_loadout.Length > 0) GUI.Label(new Rect(0, 115, width, 40), _loadout, _small);
+        if (CombatControllers.LoadoutText.Length > 0) GUI.Label(new Rect(0, 115, width, 40), CombatControllers.LoadoutText, _small);
     }
 
     private void DrawCenter(WireState s, float width)
@@ -103,20 +63,8 @@ internal sealed class DuelHud : MonoBehaviour
     private void DrawMatchEnd(WireState s, float width)
     {
         GUI.Label(new Rect(0, 360, width, 120), HudFormatter.MatchBanner(s, DuelSession.LocalSide), _banner);
-        if (GUI.Button(new Rect(width / 2 - 220, 500, 200, 60), "Revanche")) RequestRematch();
-        if (GUI.Button(new Rect(width / 2 + 20, 500, 200, 60), "Quitter")) Quit();
-    }
-
-    private static void RequestRematch()
-    {
-        if (DuelSession.IsHost) DuelHost.Instance?.RequestRematch();
-        else DuelChannel.Send(DuelMessage.Rematch());
-    }
-
-    private static void Quit()
-    {
-        SteamManager.LeaveLobby(DisconnectReason.None);
-        MainMenuManager.ToggleMenu(enabled: true);
+        if (GUI.Button(new Rect(width / 2 - 220, 500, 200, 60), "Revanche")) CombatActions.Replay();
+        if (GUI.Button(new Rect(width / 2 + 20, 500, 200, 60), "Quitter")) CombatActions.Quit();
     }
 
     private void DrawNotice(float width)
