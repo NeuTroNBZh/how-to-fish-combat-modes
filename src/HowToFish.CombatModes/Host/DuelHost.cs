@@ -47,7 +47,7 @@ internal sealed class DuelHost : MonoBehaviour
         var guest = Guest();
         CheckHandshake(guest);
         DetectReadinessAndLeaves(guest);
-        // Le temps de la préparation est gelé tant que l'île de la manche charge.
+        // Preparation time is frozen while the round island loads.
         if (!_pendingPrepare || TryPrepareRound())
             Step(new Tick(Player.LocalPlayer.Vitals.Health, guest != null ? guest.Vitals.Health : FullHealth));
         KeepPlayersInZone();
@@ -64,7 +64,7 @@ internal sealed class DuelHost : MonoBehaviour
 
     private static Player? Guest() => PlayerManager.Players.FirstOrDefault(p => p != null && p != Player.LocalPlayer);
 
-    // Le HELLO de l'invité peut arriver avant que le joueur de l'hôte existe : on ne l'efface qu'au changement de lobby.
+    // The guest's HELLO can arrive before the host player exists, so it is only cleared on lobby change.
     private void ResetForLobby(CSteamID lobby)
     {
         _lobby = lobby;
@@ -102,7 +102,7 @@ internal sealed class DuelHost : MonoBehaviour
         if (_guestSeenAt < 0) _guestSeenAt = Time.time;
         bool helloMissing = _helloFrom != guest.SteamID;
         if (!helloMissing || Time.time - _guestSeenAt < DuelSettings.HelloTimeoutSeconds) return;
-        CombatModesPlugin.Log.LogWarning($"{guest.SteamName} n'a pas le mod duel, expulsion");
+        CombatModesPlugin.Log.LogWarning($"{guest.SteamName} does not have the duel mod, kicking");
         CombatSession.ShowNotice(Ui.Lang.Text.OpponentWithoutMod, Time.time);
         ConnectionManager.Instance.KickSteamUserIfConnected(new CSteamID(guest.SteamID));
         _guestSeenAt = -1f;
@@ -128,11 +128,11 @@ internal sealed class DuelHost : MonoBehaviour
         _pendingPrepare = false;
         _center = GameActions.ArenaCenter();
         var s = CombatSession.Settings;
-        // Les spawns manuels de la config ne valent que pour l'île configurée.
+        // Manual spawns from the config only apply to the configured island.
         _spawns = s.SpawnA is { } a && s.SpawnB is { } b && island == s.IslandIndex
             ? ArenaGeometry.Facing(a, b)
             : GroundedAutoSpawns(s.ArenaRadius);
-        CombatModesPlugin.Log.LogInfo($"Île {island} prête, préparation de la manche {CombatSession.Snapshot.Round}");
+        CombatModesPlugin.Log.LogInfo($"Island {island} ready, preparing round {CombatSession.Snapshot.Round}");
         PrepareRound();
         return true;
     }
@@ -141,7 +141,7 @@ internal sealed class DuelHost : MonoBehaviour
     {
         if (Time.time < _nextWaitLog) return;
         _nextWaitLog = Time.time + WaitLogInterval;
-        CombatModesPlugin.Log.LogInfo($"En attente de l'île {island} : {GameActions.IslandStatus()}");
+        CombatModesPlugin.Log.LogInfo($"Waiting for island {island} : {GameActions.IslandStatus()}");
     }
 
     private (SpawnPoint A, SpawnPoint B) GroundedAutoSpawns(float radius)
@@ -160,7 +160,7 @@ internal sealed class DuelHost : MonoBehaviour
         CombatSession.Snapshot = step.Snapshot;
         if (step.Snapshot.Phase != before.Phase) LogTransition(before, step);
         Execute(step.Effect);
-        // Re-placement au début du compte à rebours : la résurrection côté client peut ramener le joueur à sa position de mort.
+        // Re-place at countdown start: the client-side revive can bring the player back to their death position.
         if (before.Phase == DuelPhase.Preparing && step.Snapshot.Phase == DuelPhase.Countdown) PlaceAll();
         if (step.Effect != DuelEffect.None || step.Snapshot.Phase != before.Phase) Broadcast();
     }
@@ -169,8 +169,8 @@ internal sealed class DuelHost : MonoBehaviour
     {
         var s = step.Snapshot;
         CombatModesPlugin.Log.LogInfo(
-            $"Phase {before.Phase} -> {s.Phase} (manche {s.Round}, score {s.HostScore}-{s.GuestScore}, " +
-            $"kit {s.Kit?.Name ?? "-"}, île {s.Island}, effet {step.Effect})");
+            $"Phase {before.Phase} -> {s.Phase} (round {s.Round}, score {s.HostScore}-{s.GuestScore}, " +
+            $"kit {s.Kit?.Name ?? "-"}, island {s.Island}, effect {step.Effect})");
     }
 
     private void Execute(DuelEffect effect)
@@ -181,27 +181,27 @@ internal sealed class DuelHost : MonoBehaviour
                 _pendingPrepare = true;
                 break;
             case DuelEffect.StartFight:
-                Guarded("tir allié", () => ServerSettings.Instance.ToggleFriendlyFire(true));
+                Guarded("friendly fire", () => ServerSettings.Instance.ToggleFriendlyFire(true));
                 foreach (var (player, side) in Participants())
-                    Guarded($"soin {side}", () => GameActions.HealToFull(player));
+                    Guarded($"heal {side}", () => GameActions.HealToFull(player));
                 break;
             case DuelEffect.ResetToWaiting:
                 _pendingPrepare = false;
-                Guarded("nettoyage des armes", DestroyGivenItems);
-                Guarded("réanimation hôte", () => GameActions.Revive(Player.LocalPlayer));
+                Guarded("weapon cleanup", DestroyGivenItems);
+                Guarded("host revive", () => GameActions.Revive(Player.LocalPlayer));
                 break;
         }
     }
 
     private void PrepareRound()
     {
-        Guarded("nettoyage des armes", DestroyGivenItems);
+        Guarded("weapon cleanup", DestroyGivenItems);
         _loadouts.Clear();
         var kit = CombatSession.Snapshot.Kit!;
         foreach (var (player, side) in Participants())
         {
-            Guarded($"réanimation {side}", () => GameActions.Revive(player));
-            Guarded($"vidage {side}", () => GameActions.ClearInventory(player));
+            Guarded($"revive {side}", () => GameActions.Revive(player));
+            Guarded($"clear inventory {side}", () => GameActions.ClearInventory(player));
             Guarded($"placement {side}", () => GameActions.Place(player, SpawnFor(side)));
             Guarded($"kit {side}", () => GiveKit(player, kit));
         }
@@ -211,7 +211,7 @@ internal sealed class DuelHost : MonoBehaviour
     {
         var (given, missing) = GameActions.GiveKit(player, kit, ApplyRoundLoadout);
         _givenItems.AddRange(given);
-        foreach (var item in missing) CombatModesPlugin.Log.LogWarning($"Objet introuvable au moment du don : {item}");
+        foreach (var item in missing) CombatModesPlugin.Log.LogWarning($"Item not found when giving : {item}");
     }
 
     private void ApplyRoundLoadout(string itemName, Item item)
@@ -244,7 +244,7 @@ internal sealed class DuelHost : MonoBehaviour
         {
             var position = GameActions.ToNumerics(player.Transform.position);
             if (!ArenaGeometry.IsOutside(position, center, CombatSession.Settings.ArenaRadius)) continue;
-            Guarded($"retour en zone {side}", () => GameActions.Place(player, SpawnFor(side)));
+            Guarded($"return to zone {side}", () => GameActions.Place(player, SpawnFor(side)));
         }
     }
 
@@ -276,7 +276,7 @@ internal sealed class DuelHost : MonoBehaviour
         }
         catch (Exception ex)
         {
-            CombatModesPlugin.Log.LogError($"Échec ({what}) : {ex}");
+            CombatModesPlugin.Log.LogError($"Failed ({what}) : {ex}");
         }
     }
 }

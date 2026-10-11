@@ -28,10 +28,10 @@ public class KitParserTests
     }
 
     [Theory]
-    [InlineData("", "aucun kit")]
-    [InlineData("   ;  ", "aucun kit")]
+    [InlineData("", "no kit")]
+    [InlineData("   ;  ", "no kit")]
     [InlineData("pistol|knife", "|")]
-    [InlineData("pistol++knife", "objet vide")]
+    [InlineData("pistol++knife", "empty item")]
     public void Parse_RejectsInvalidText(string text, string expectedErrorPart)
     {
         var kits = KitParser.Parse(text, out var error);

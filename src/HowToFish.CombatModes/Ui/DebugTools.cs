@@ -13,7 +13,7 @@ internal sealed class DebugTools : MonoBehaviour
     private void Awake()
     {
         if (Enum.TryParse(CombatSession.DebugPositionKey, true, out Key key)) _positionKey = key;
-        else CombatModesPlugin.Log.LogWarning($"DebugPositionKey '{CombatSession.DebugPositionKey}' inconnue, F9 utilisée");
+        else CombatModesPlugin.Log.LogWarning($"DebugPositionKey '{CombatSession.DebugPositionKey}' unknown, using F9");
     }
 
     private void Update()
@@ -24,7 +24,7 @@ internal sealed class DebugTools : MonoBehaviour
         {
             var p = Player.LocalPlayer.Transform.position;
             var text = FormattableString.Invariant($"{p.x:F1},{p.y:F1},{p.z:F1}");
-            CombatModesPlugin.Log.LogInfo($"Position : {text}");
+            CombatModesPlugin.Log.LogInfo($"Position: {text}");
             CombatSession.ShowNotice(Lang.Text.Position(text), Time.time);
         }
         if (!CombatSession.Settings.DebugSolo) return;

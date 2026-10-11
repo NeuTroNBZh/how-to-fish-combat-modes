@@ -1,0 +1,24 @@
+HOW TO FISH - COMBAT MODES
+==========================
+
+1v1 Duel, Free-for-all and Gun Game for How to Fish.
+
+Installation (once)
+1. Steam > right-click How to Fish > Manage > Browse local files.
+2. Extract EVERYTHING from this archive into that folder (next to "How to Fish.exe").
+   Accept to replace files if Windows asks.
+3. Start the game: a "Combat Modes" button appears in the main menu.
+
+Playing
+- Invite friends: the host invites through the Steam overlay, friends accept the invite.
+- Quick match: everyone clicks Quick match in the same mode. The first player creates
+  the lobby, the others join it automatically.
+- Free-for-all and Gun Game: 2 to 8 players, the host clicks Start.
+- Hold Tab to see the scoreboard.
+
+Every player needs the same version of the mod and of the game.
+
+Settings: BepInEx\config\htf.combatmodes.cfg (created on first launch).
+
+Uninstall: delete the folder BepInEx\plugins\HowToFish.CombatModes
+(or delete winhttp.dll to disable every BepInEx mod).

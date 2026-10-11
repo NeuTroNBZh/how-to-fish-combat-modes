@@ -40,18 +40,18 @@ public class DuelCodecTests
     }
 
     [Theory]
-    [InlineData("", "préfixe")]
-    [InlineData("HELLO", "préfixe")]
+    [InlineData("", "prefix")]
+    [InlineData("HELLO", "prefix")]
     [InlineData("HTFCM|2|HELLO", "version")]
     [InlineData("HTFCM|x|HELLO", "version")]
     [InlineData("HTFCM|1|PING", "type")]
     [InlineData("HTFCM|1|REQ|NOPE", "type")]
-    [InlineData("HTFCM|1|STATE|4|3|2|1|2500|kit|1|0|-1|0", "champs")]
-    [InlineData("HTFCM|1|STATE|4|3|x|1|2500|kit|1|0|-1|0|1", "nombre")]
+    [InlineData("HTFCM|1|STATE|4|3|2|1|2500|kit|1|0|-1|0", "field")]
+    [InlineData("HTFCM|1|STATE|4|3|x|1|2500|kit|1|0|-1|0|1", "number")]
     [InlineData("HTFCM|1|STATE|9|3|2|1|2500|kit|1|0|-1|0|1", "phase")]
-    [InlineData("HTFCM|1|STATE|4|3|2|1|2500|kit|5|0|-1|0|1", "côté")]
-    [InlineData("HTFCM|1|STATE|4|3|-2|1|2500|kit|1|0|-1|0|1", "négative")]
-    [InlineData("HTFCM|1|STATE|4|3|2|1|2500|kit|1|7|-1|0|1", "booléen")]
+    [InlineData("HTFCM|1|STATE|4|3|2|1|2500|kit|5|0|-1|0|1", "side")]
+    [InlineData("HTFCM|1|STATE|4|3|-2|1|2500|kit|1|0|-1|0|1", "negative")]
+    [InlineData("HTFCM|1|STATE|4|3|2|1|2500|kit|1|7|-1|0|1", "boolean")]
     public void TryDecode_RejectsInvalidMessages(string text, string expectedErrorPart)
     {
         Assert.False(DuelCodec.TryDecode(text, out var m, out var error));

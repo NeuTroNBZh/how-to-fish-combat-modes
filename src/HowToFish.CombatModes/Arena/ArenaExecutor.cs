@@ -7,7 +7,7 @@ namespace HowToFish.CombatModes.Arena;
 
 internal sealed class ArenaExecutor
 {
-    // Le client détecte une réapparition quand la vie revient à 50 : on soigne un peu après.
+    // The client detects a respawn when health returns to 50, so heal slightly afterwards.
     private const float HealDelay = 0.5f;
 
     private readonly bool _randomUpgrades;
@@ -44,7 +44,7 @@ internal sealed class ArenaExecutor
         GameActions.ClearInventory(player);
         var (given, missing) = GameActions.GiveKit(player, kit, ApplyLoadout);
         _items[player.SteamID] = given.ToList();
-        foreach (var item in missing) CombatModesPlugin.Log.LogWarning($"Objet introuvable au moment du don : {item}");
+        foreach (var item in missing) CombatModesPlugin.Log.LogWarning($"Item not found when giving : {item}");
     }
 
     public void Strip(ulong id)

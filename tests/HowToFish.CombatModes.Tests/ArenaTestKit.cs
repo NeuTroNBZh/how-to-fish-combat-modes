@@ -23,7 +23,7 @@ internal static class ArenaTestKit
     public static ArenaSnapshot Lobby(ArenaRules rules, GameMode mode, params ulong[] ids) =>
         ids.Aggregate(ArenaSnapshot.Lobby(mode), (s, id) => rules.Apply(s, new ArenaJoin(id), 0).Snapshot);
 
-    // Préparation à t=10, compte à rebours à t=11, combat à t=14.
+    // Preparation at t=10, countdown at t=11, combat at t=14.
     public static ArenaSnapshot Playing(ArenaRules rules, GameMode mode, params ulong[] ids)
     {
         var s = rules.Apply(Lobby(rules, mode, ids), new ArenaStart(), 10).Snapshot;

@@ -82,7 +82,7 @@ internal sealed class CombatHud : NativeScreen
         _lastArena = w;
     }
 
-    // Chaque seconde du compte à rebours démarre grande et opaque puis se résorbe.
+    // Each countdown second starts large and opaque, then shrinks away.
     private void TickCountdown()
     {
         if (CombatUiState.Screen != CombatScreen.Countdown)

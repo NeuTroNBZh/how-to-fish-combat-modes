@@ -14,7 +14,7 @@ internal sealed class ArenaSpawns
     private const int MinCandidates = 4;
     private const float RingFactor = 0.6f;
     private const float FallbackHeight = 2f;
-    // Un joueur téléporté n'a pas encore bougé côté serveur : on garde les spawns récents comme occupés.
+    // A teleported player has not moved server-side yet, so recent spawns are kept as occupied.
     private const float RecentSeconds = 3f;
 
     private readonly IReadOnlyList<NVector3> _points;
@@ -36,7 +36,7 @@ internal sealed class ArenaSpawns
         foreach (var point in SpawnPicker.Ring(c, radius * RingFactor, CandidateCount))
             if (GameActions.TryGround(GameActions.ToUnity(point), out var ground)) grounded.Add(GameActions.ToNumerics(ground));
         if (grounded.Count >= MinCandidates) return new ArenaSpawns(grounded, c);
-        CombatModesPlugin.Log.LogWarning($"Seulement {grounded.Count} spawns au sol, centre de l'île utilisé");
+        CombatModesPlugin.Log.LogWarning($"Only {grounded.Count} grounded spawns, using island center");
         return new ArenaSpawns(new[] { c + new NVector3(0, FallbackHeight, 0) }, c);
     }
 

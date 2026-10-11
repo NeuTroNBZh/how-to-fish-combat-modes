@@ -43,7 +43,7 @@ internal sealed class ArenaHost : MonoBehaviour
         if (!CombatSession.IsHostingArena || Player.LocalPlayer == null || Server.Instance == null) return;
         if (!EnsureSettings()) return;
         SyncRoster();
-        // Le temps de la préparation est gelé tant que l'île de la partie charge.
+        // Preparation time is frozen while the match island loads.
         if (_pendingIsland < 0 || TryFinishIsland()) Step(new ArenaTick());
         _executor!.Update(Time.time);
         Publish();
@@ -131,7 +131,7 @@ internal sealed class ArenaHost : MonoBehaviour
             return;
         }
         if (Time.time - since < DuelSettings.HelloTimeoutSeconds) return;
-        CombatModesPlugin.Log.LogWarning($"{player.SteamName} n'a pas le mod, expulsion");
+        CombatModesPlugin.Log.LogWarning($"{player.SteamName} does not have the mod, kicking");
         CombatSession.ShowNotice(Ui.Lang.Text.PlayerWithoutMod(player.SteamName), Time.time);
         ConnectionManager.Instance.KickSteamUserIfConnected(new CSteamID(player.SteamID));
         _firstSeen.Remove(player.SteamID);
@@ -144,12 +144,12 @@ internal sealed class ArenaHost : MonoBehaviour
             if (Time.time >= _nextWaitLog)
             {
                 _nextWaitLog = Time.time + WaitLogInterval;
-                CombatModesPlugin.Log.LogInfo($"En attente de l'île {_pendingIsland} : {GameActions.IslandStatus()}");
+                CombatModesPlugin.Log.LogInfo($"Waiting for island {_pendingIsland} : {GameActions.IslandStatus()}");
             }
             return false;
         }
         _executor!.UseSpawns(ArenaSpawns.Compute(GameActions.ArenaCenter(), CombatSession.Settings.ArenaRadius));
-        CombatModesPlugin.Log.LogInfo($"Île {_pendingIsland} prête");
+        CombatModesPlugin.Log.LogInfo($"Island {_pendingIsland} ready");
         _pendingIsland = -1;
         return true;
     }
@@ -161,7 +161,7 @@ internal sealed class ArenaHost : MonoBehaviour
         var step = _rules.Apply(before, e, Time.time);
         CombatSession.ArenaSnapshot = step.Snapshot;
         if (step.Snapshot.Phase != before.Phase)
-            CombatModesPlugin.Log.LogInfo($"Arène {before.Phase} -> {step.Snapshot.Phase} ({step.Snapshot.Players.Count} joueurs, île {step.Snapshot.Island})");
+            CombatModesPlugin.Log.LogInfo($"Arena {before.Phase} -> {step.Snapshot.Phase} ({step.Snapshot.Players.Count} players, island {step.Snapshot.Island})");
         foreach (var action in step.Actions) Guarded(action.ToString(), () => Execute(action));
         if (step.Actions.Count > 0 || step.Snapshot.Phase != before.Phase || step.Snapshot.Players.Count != before.Players.Count)
             _nextBroadcast = 0f;
@@ -194,7 +194,7 @@ internal sealed class ArenaHost : MonoBehaviour
                 ServerSettings.Instance.ToggleFriendlyFire(true);
                 break;
             case EndGame end:
-                CombatModesPlugin.Log.LogInfo($"Partie terminée, gagnant {end.Winner}");
+                CombatModesPlugin.Log.LogInfo($"Match over, winner {end.Winner}");
                 break;
         }
     }
@@ -228,7 +228,7 @@ internal sealed class ArenaHost : MonoBehaviour
         }
         catch (Exception ex)
         {
-            CombatModesPlugin.Log.LogError($"Échec ({what}) : {ex}");
+            CombatModesPlugin.Log.LogError($"Failed ({what}) : {ex}");
         }
     }
 }

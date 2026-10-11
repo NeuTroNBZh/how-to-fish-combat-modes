@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace HowToFish.CombatModes.Ui.Native;
 
-// Messages ponctuels (adversaire sans le mod, config invalide…) pendant tout le temps passé en combat.
+// One-off messages (opponent without the mod, invalid config...) shown for the whole time spent in combat.
 internal sealed class NoticeScreen : NativeScreen
 {
     private TextMeshProUGUI? _label;

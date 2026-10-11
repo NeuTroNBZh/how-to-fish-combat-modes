@@ -32,7 +32,7 @@ internal static class RandomPicker
 {
     public static T PickAvoiding<T>(IReadOnlyList<T> items, Func<T, bool> isPrevious, IRandomSource random, string paramName)
     {
-        if (items.Count == 0) throw new ArgumentException("Au moins un élément est requis.", paramName);
+        if (items.Count == 0) throw new ArgumentException("At least one element is required.", paramName);
         var candidates = items.Where(i => !isPrevious(i)).ToList();
         return candidates.Count == 0 ? items[random.Next(items.Count)] : candidates[random.Next(candidates.Count)];
     }

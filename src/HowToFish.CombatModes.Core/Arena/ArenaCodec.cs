@@ -28,12 +28,12 @@ public static class ArenaCodec
     {
         wire = null;
         var p = text.Split('|');
-        if (!IsArena(text) || p.Length != FieldCount) return Fail($"message arène mal formé ({p.Length} champs)", out error);
+        if (!IsArena(text) || p.Length != FieldCount) return Fail($"malformed arena message ({p.Length} fields)", out error);
         if (!TryInt(p[3], out var mode) || !Enum.IsDefined(typeof(GameMode), mode) || mode == (int)GameMode.Duel)
-            return Fail($"mode invalide '{p[3]}'", out error);
-        if (!TryInt(p[4], out var phase) || !Enum.IsDefined(typeof(ArenaPhase), phase)) return Fail($"phase invalide '{p[4]}'", out error);
-        if (!TryInt(p[5], out var remaining) || remaining < 0) return Fail($"temps invalide '{p[5]}'", out error);
-        if (!ulong.TryParse(p[7], NumberStyles.None, Inv, out var winner)) return Fail($"gagnant invalide '{p[7]}'", out error);
+            return Fail($"invalid mode '{p[3]}'", out error);
+        if (!TryInt(p[4], out var phase) || !Enum.IsDefined(typeof(ArenaPhase), phase)) return Fail($"invalid phase '{p[4]}'", out error);
+        if (!TryInt(p[5], out var remaining) || remaining < 0) return Fail($"invalid time '{p[5]}'", out error);
+        if (!ulong.TryParse(p[7], NumberStyles.None, Inv, out var winner)) return Fail($"invalid winner '{p[7]}'", out error);
         if (!TryPlayers(p[8], out var players, out error)) return false;
         var ladder = p[9].Length == 0 ? Array.Empty<string>() : p[9].Split(';');
         wire = new ArenaWire((GameMode)mode, (ArenaPhase)phase, remaining, p[6], winner == 0 ? null : winner, players, ladder);
@@ -50,10 +50,10 @@ public static class ArenaCodec
             return true;
         }
         var entries = field.Split(',');
-        if (entries.Length > GameModes.ArenaMaxMembers) return Fail($"{entries.Length} joueurs, maximum {GameModes.ArenaMaxMembers}", out error);
+        if (entries.Length > GameModes.ArenaMaxMembers) return Fail($"{entries.Length} players, maximum {GameModes.ArenaMaxMembers}", out error);
         foreach (var entry in entries)
         {
-            if (!TryPlayer(entry, out var player)) return Fail($"joueur invalide '{entry}'", out error);
+            if (!TryPlayer(entry, out var player)) return Fail($"invalid player '{entry}'", out error);
             list.Add(player!);
         }
         error = "";

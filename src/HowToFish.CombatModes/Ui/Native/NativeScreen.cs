@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace HowToFish.CombatModes.Ui.Native;
 
-// Écran du mod sur le canvas : reconstruit quand sa clé change (structure), mis à jour à chaque frame par Tick (textes).
+// Mod screen on the canvas: rebuilt when its key changes (structure), updated every frame by Tick (texts).
 internal abstract class NativeScreen : MonoBehaviour
 {
     private RectTransform? _layer;
@@ -20,7 +20,7 @@ internal abstract class NativeScreen : MonoBehaviour
     {
     }
 
-    // Le jeu masque ses propres canvas pendant la pause : on fait de même pour laisser le menu pause cliquable.
+    // The game hides its own canvases during pause: do the same to keep the pause menu clickable.
     protected virtual bool ShowsDuringPause => false;
 
     private void Update()
@@ -48,7 +48,7 @@ internal abstract class NativeScreen : MonoBehaviour
         }
         catch (Exception ex)
         {
-            CombatModesPlugin.Log.LogError($"Écran {GetType().Name} : {ex}");
+            CombatModesPlugin.Log.LogError($"Screen {GetType().Name} : {ex}");
             _key = "";
         }
     }

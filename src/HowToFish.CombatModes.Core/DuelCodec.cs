@@ -14,7 +14,7 @@ public static class DuelCodec
     {
         MessageKind.Hello => $"{Prefix}|{ProtocolVersion}|HELLO",
         MessageKind.Rematch => $"{Prefix}|{ProtocolVersion}|REQ|REMATCH",
-        _ => EncodeState(m.State ?? throw new ArgumentException("STATE sans état", nameof(m))),
+        _ => EncodeState(m.State ?? throw new ArgumentException("STATE without state", nameof(m))),
     };
 
     private static string EncodeState(WireState s) => string.Join("|",
@@ -26,14 +26,14 @@ public static class DuelCodec
     {
         message = null;
         var p = text.Split('|');
-        if (p.Length < 3 || p[0] != Prefix) return Fail("préfixe absent", out error);
+        if (p.Length < 3 || p[0] != Prefix) return Fail("missing prefix", out error);
         if (!int.TryParse(p[1], NumberStyles.None, CultureInfo.InvariantCulture, out var v) || v != ProtocolVersion)
-            return Fail($"version inconnue '{p[1]}'", out error);
+            return Fail($"unknown version '{p[1]}'", out error);
 
         if (p.Length == 3 && p[2] == "HELLO") message = DuelMessage.Hello();
         else if (p.Length == 4 && p[2] == "REQ" && p[3] == "REMATCH") message = DuelMessage.Rematch();
         else if (p[2] == "STATE") return TryDecodeState(p, out message, out error);
-        else return Fail($"type de message inconnu '{p[2]}'", out error);
+        else return Fail($"unknown message type '{p[2]}'", out error);
 
         error = "";
         return true;
@@ -42,18 +42,18 @@ public static class DuelCodec
     private static bool TryDecodeState(string[] p, out DuelMessage? message, out string error)
     {
         message = null;
-        if (p.Length != StateFieldCount) return Fail($"nombre de champs {p.Length} au lieu de {StateFieldCount}", out error);
+        if (p.Length != StateFieldCount) return Fail($"field count {p.Length} instead of {StateFieldCount}", out error);
         var n = new int[NumericFields.Length];
         for (int i = 0; i < NumericFields.Length; i++)
         {
             var field = p[NumericFields[i]];
             if (!int.TryParse(field, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out n[i]))
-                return Fail($"nombre invalide '{field}'", out error);
+                return Fail($"invalid number '{field}'", out error);
         }
-        if (!Enum.IsDefined(typeof(DuelPhase), n[0])) return Fail($"phase inconnue {n[0]}", out error);
-        if (n[1] < 0 || n[2] < 0 || n[3] < 0 || n[4] < 0) return Fail("valeur négative", out error);
-        if (!IsSide(n[5]) || !IsSide(n[7])) return Fail("côté invalide", out error);
-        if (!IsBit(n[6]) || !IsBit(n[8]) || !IsBit(n[9])) return Fail("booléen invalide", out error);
+        if (!Enum.IsDefined(typeof(DuelPhase), n[0])) return Fail($"unknown phase {n[0]}", out error);
+        if (n[1] < 0 || n[2] < 0 || n[3] < 0 || n[4] < 0) return Fail("negative value", out error);
+        if (!IsSide(n[5]) || !IsSide(n[7])) return Fail("invalid side", out error);
+        if (!IsBit(n[6]) || !IsBit(n[8]) || !IsBit(n[9])) return Fail("invalid boolean", out error);
 
         var state = new WireState((DuelPhase)n[0], n[1], n[2], n[3], n[4], p[8],
             ToSide(n[5]), n[6] == 1, ToSide(n[7]), n[8] == 1, n[9] == 1);

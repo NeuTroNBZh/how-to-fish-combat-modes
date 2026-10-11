@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace HowToFish.CombatModes.Ui;
 
-// Vue de l'état de combat côté joueur local, commune au rendu natif et au repli IMGUI.
+// View of the combat state for the local player, shared by the native renderer and the IMGUI fallback.
 internal static class CombatUiState
 {
     public static bool InCombat => CombatSession.IsDuelLobby;

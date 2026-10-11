@@ -51,7 +51,7 @@ internal static class CompatibilityCheck
             .Select(x => $"{x.Type.Name}.{x.Name}")
             .ToList();
 
-        foreach (var name in missing) log.LogError($"Incompatible : {name} introuvable dans cette version du jeu");
+        foreach (var name in missing) log.LogError($"Incompatible: {name} not found in this game version");
         return missing.Count == 0;
     }
 }

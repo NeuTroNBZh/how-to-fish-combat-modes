@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 namespace HowToFish.CombatModes.Ui.Native;
 
-// Sous-menu ajouté à CanvasManager._allMainMenuButtons : le jeu le masque avec ses autres sous-menus.
+// Submenu added to CanvasManager._allMainMenuButtons: the game hides it with its other submenus.
 internal sealed class CombatMenuScreen : MonoBehaviour
 {
     private const float TitleSize = 46f;
@@ -86,7 +86,7 @@ internal sealed class CombatMenuScreen : MonoBehaviour
         UpdateNotice();
     }
 
-    // Appelé par le patch de PauseManager.PauseInput : vrai si Échap a été consommé par ce sous-menu.
+    // Called by the PauseManager.PauseInput patch: true if Escape was consumed by this submenu.
     public bool HandleEscape()
     {
         if (_root == null || !_root.activeSelf || !MainMenuManager.IsInMenu) return false;

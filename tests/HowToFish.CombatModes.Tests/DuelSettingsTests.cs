@@ -25,7 +25,7 @@ public class DuelSettingsTests
     [Fact]
     public void DefaultKits_OnlyUseItemsThatExistInGame()
     {
-        // Clés relevées dans GameInfo par le prototype (docs/prototype-findings.md)
+        // Keys found in GameInfo by the prototype (docs/prototype-findings.md)
         var gameWeapons = new[]
         {
             "pistol", "shotgun", "smg", "assaultrifle", "sniperrifle", "bow", "knife", "brassknuckles", "dynamite",

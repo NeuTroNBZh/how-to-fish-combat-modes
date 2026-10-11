@@ -20,7 +20,7 @@ public enum BannerTone
 
 public static class CombatUiRules
 {
-    // Sans état reçu de l'hôte, le joueur est encore au salon.
+    // With no state received from the host, the player is still in the lobby.
     public static CombatScreen ScreenFor(DuelPhase? phase) => phase switch
     {
         null or DuelPhase.Waiting => CombatScreen.Lobby,
@@ -43,9 +43,9 @@ public static class CombatUiRules
 
     public static bool BlocksInputs(CombatScreen screen) => FreesCursor(screen);
 
-    // Seul l'hôte du mode fait réapparaître les joueurs : le respawn du jeu jette le kit au sol.
+    // Only the mode host respawns players: the game's respawn drops the kit on the ground.
     public static bool BlocksGameRespawn(bool inCombatLobby) => inCombatLobby;
 
-    // Sauvegarde et réglages du serveur n'ont pas de sens dans une partie de combat temporaire.
+    // Save and server settings make no sense in a temporary combat game.
     public static bool HidesServerButtons(bool inCombatLobby) => inCombatLobby;
 }

@@ -25,7 +25,7 @@ public sealed record ArenaSettings(
         var ladder = GunGameLadder.Parse(raw.Ladder, out var error);
         if (ladder == null)
         {
-            w.Add($"Ladder invalide ({error}), échelle par défaut utilisée");
+            w.Add($"Invalid Ladder ({error}), using default ladder");
             ladder = GunGameLadder.Parse(DefaultLadder, out _)!;
         }
         var settings = new ArenaSettings(

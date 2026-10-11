@@ -102,7 +102,7 @@ public sealed class ArenaRules
     private static ArenaStep Join(ArenaSnapshot s, ulong id, double now)
     {
         if (s.Find(id) != null || s.Players.Count >= ArenaSettings.MaxPlayers) return Same(s);
-        // Un retardataire en course à l'armement part du niveau le plus bas pour ne pas être distancé.
+        // A late joiner in gun game starts at the lowest level so they are not left behind.
         int level = s.Mode == GameMode.GunGame && s.IsLive && s.Players.Count > 0 ? s.Players.Min(p => p.Level) : 0;
         return Same(s.WithPlayer(new ArenaPlayer(id, 0, 0, level, false, now, 0)));
     }
@@ -116,7 +116,7 @@ public sealed class ArenaRules
         return Step(next, new Strip(id));
     }
 
-    // Pénalité seulement pour une mort sans adversaire (chute, noyade, suicide) : un tueur parti ne doit rien coûter.
+    // Penalty only for a death with no opponent (fall, drowning, suicide): a departed killer must cost nothing.
     private ArenaStep OnDeath(ArenaSnapshot s, ulong id, double now, bool penalize)
     {
         if (s.Find(id) is not { Alive: true } p) return Same(s);

@@ -7,16 +7,16 @@ public sealed record OpenLobby(ulong Id, int Members);
 
 public static class QuickMatchPolicy
 {
-    // Deux joueurs qui cherchent en même temps créent chacun un lobby : seul celui qui a l'identifiant
-    // le plus grand rejoint l'autre, sinon ils se croiseraient.
+    // Two players searching at the same time each create a lobby: only the one with the larger id
+    // joins the other, otherwise they would miss each other.
     public static ulong? MergeTarget(ulong ownLobby, IEnumerable<ulong> openLobbies)
     {
         var lower = openLobbies.Where(id => id < ownLobby).ToList();
         return lower.Count == 0 ? null : lower.Min();
     }
 
-    // En arène un salon déjà peuplé reste ouvert : un hôte seul le rejoint quel que soit son identifiant,
-    // sinon la partie rapide se scinde en plusieurs salons.
+    // In arena mode an already populated lobby stays open: a lone host joins it regardless of its id,
+    // otherwise quick play splits into several lobbies.
     public static ulong? MergeTarget(ulong ownLobby, IEnumerable<OpenLobby> openLobbies, bool arena)
     {
         var others = openLobbies.Where(l => l.Id != ownLobby).ToList();

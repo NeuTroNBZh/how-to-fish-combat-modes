@@ -14,10 +14,10 @@ public static class SpawnPicker
             return new Vector3(center.X + radius * (float)Math.Cos(angle), center.Y, center.Z + radius * (float)Math.Sin(angle));
         }).ToList();
 
-    // Le meilleur spawn est celui dont le joueur le plus proche est le plus loin ; égalité → premier candidat.
+    // The best spawn is the one whose nearest player is farthest away; ties go to the first candidate.
     public static int Farthest(IReadOnlyList<Vector3> candidates, IReadOnlyList<Vector3> occupied)
     {
-        if (candidates.Count == 0) throw new ArgumentException("Au moins un spawn est requis.", nameof(candidates));
+        if (candidates.Count == 0) throw new ArgumentException("At least one spawn is required.", nameof(candidates));
         if (occupied.Count == 0) return 0;
         int best = 0;
         float bestDistance = -1f;

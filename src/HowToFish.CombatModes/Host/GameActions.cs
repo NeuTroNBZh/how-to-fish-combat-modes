@@ -21,8 +21,8 @@ internal static class GameActions
 
     public static bool IsMainIsland(int index) => index >= 0 && index <= byte.MaxValue && IslandManager.IsMainIsland((byte)index);
 
-    // Équivalent serveur de Server.RespawnPlayer sans son ServerDropAll : le RPC s'exécute au tick
-    // suivant et jetterait au sol le kit donné entre-temps.
+    // Server equivalent of Server.RespawnPlayer without its ServerDropAll: the RPC runs on the
+    // next tick and would drop the kit given in the meantime.
     public static void Revive(Player p)
     {
         var corpse = p.Dying.DeadPlayer;
@@ -30,7 +30,7 @@ internal static class GameActions
         p.Vitals.ServerResetVitals();
     }
 
-    // Pas pendant la préparation : le client détecte une réapparition quand la vie revient à la vie de départ (50).
+    // Not during preparation: the client detects a respawn when health returns to the starting health (50).
     public static void HealToFull(Player p) => p.Vitals.Heal(MaxHealth);
 
     public static void ClearInventory(Player p)
@@ -77,7 +77,7 @@ internal static class GameActions
             }
             catch (System.Exception ex)
             {
-                CombatModesPlugin.Log.LogError($"Accessoires de {name} non appliqués, arme nue : {ex}");
+                CombatModesPlugin.Log.LogError($"Attachments for {name} not applied, bare weapon : {ex}");
             }
         }
         return (given, missing);
@@ -100,8 +100,8 @@ internal static class GameActions
     {
         var island = Island.CurIsland;
         string scene = island != null ? island.gameObject.scene.buildIndex.ToString() : "aucune";
-        return $"chargement={IslandManager.IsLoading}, téléportation={OnlineIslandManager.TeleportPlayers}, " +
-               $"île courante={OnlineIslandManager.CurIsland}, scène={scene}";
+        return $"loading={IslandManager.IsLoading}, teleport={OnlineIslandManager.TeleportPlayers}, " +
+               $"current island={OnlineIslandManager.CurIsland}, scene={scene}";
     }
 
     public static Vector3 ArenaCenter() => Island.IslandPos;

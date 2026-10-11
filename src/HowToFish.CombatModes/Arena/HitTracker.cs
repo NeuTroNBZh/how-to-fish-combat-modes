@@ -4,7 +4,7 @@ using HowToFish.CombatModes.Core.Arena;
 
 namespace HowToFish.CombatModes.Arena;
 
-// Le jeu ne transmet pas le tueur à la mort : on retient le dernier joueur qui a touché chaque victime.
+// The game does not report the killer on death, so remember the last player who hit each victim.
 internal static class HitTracker
 {
     public sealed class Hit
@@ -27,7 +27,7 @@ internal static class HitTracker
     {
         if (victim == null || attacker == null || victim == attacker) return;
         ArenaHost.Instance?.OnHitDealt(attacker.SteamID);
-        // Les plombs arrivés après la mort ne doivent pas ré-armer un crédit de kill sur la victime.
+        // Pellets landing after death must not re-arm a kill credit on the victim.
         if (ArenaHost.Instance == null || !ArenaHost.Instance.AllowsDamage(victim)) return;
         var held = attacker.Holding.HeldItem;
         var weapon = held != null ? ItemNames.KeyOf(held.name) : "";

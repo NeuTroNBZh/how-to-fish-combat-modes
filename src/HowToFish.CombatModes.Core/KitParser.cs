@@ -9,7 +9,7 @@ public static class KitParser
     {
         if (text.Contains('|'))
         {
-            error = "le caractère '|' est interdit dans les kits";
+            error = "the '|' character is not allowed in kits";
             return null;
         }
 
@@ -20,7 +20,7 @@ public static class KitParser
             var items = rawKit.Split('+').Select(Normalize).ToList();
             if (items.Any(i => i.Length == 0))
             {
-                error = $"objet vide dans le kit '{rawKit.Trim()}'";
+                error = $"empty item in kit '{rawKit.Trim()}'";
                 return null;
             }
             kits.Add(new Kit(string.Join("+", items), items));
@@ -28,7 +28,7 @@ public static class KitParser
 
         if (kits.Count == 0)
         {
-            error = "aucun kit défini";
+            error = "no kit defined";
             return null;
         }
 

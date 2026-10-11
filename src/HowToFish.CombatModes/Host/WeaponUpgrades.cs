@@ -38,7 +38,7 @@ internal static class WeaponUpgrades
             0);
     }
 
-    // Appelé côté serveur après le Spawn : les SyncVar se synchronisent ensuite comme un achat d'accessoire.
+    // Called server-side after Spawn: SyncVars then sync like an attachment purchase.
     public static void Apply(Item item, Loadout loadout)
     {
         if (item is Melee melee)
@@ -56,7 +56,7 @@ internal static class WeaponUpgrades
         a._syncedLaserSight.Value = loadout.Laser;
     }
 
-    // Weapon remplit son chargeur à sa création, avant de recevoir le chargeur étendu.
+    // Weapon fills its magazine on creation, before receiving the extended magazine.
     public static void RefillLocalAmmo(Player player)
     {
         foreach (var weapon in Items(player).OfType<Weapon>().Where(w => w.Attachments != null))

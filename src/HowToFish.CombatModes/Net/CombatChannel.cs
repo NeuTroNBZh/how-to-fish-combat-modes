@@ -27,7 +27,7 @@ internal sealed class CombatChannel : MonoBehaviour
         if (!CombatSession.IsDuelLobby) return false;
         var bytes = Encoding.UTF8.GetBytes(text);
         bool sent = SteamMatchmaking.SendLobbyChatMsg(CombatSession.LobbyId, bytes, bytes.Length);
-        if (!sent) CombatModesPlugin.Log.LogWarning($"Envoi du message {label} impossible");
+        if (!sent) CombatModesPlugin.Log.LogWarning($"Could not send {label} message");
         return sent;
     }
 
@@ -47,18 +47,18 @@ internal sealed class CombatChannel : MonoBehaviour
         if (!text.StartsWith(DuelCodec.Prefix + "|", StringComparison.Ordinal)) return;
         if (!DuelCodec.TryDecode(text, out var message, out var error))
         {
-            CombatModesPlugin.Log.LogWarning($"Message duel rejeté ({error}) : {text}");
+            CombatModesPlugin.Log.LogWarning($"Duel message rejected ({error}) : {text}");
             return;
         }
         Dispatch(sender, message!);
     }
 
-    // Seul l'hôte (propriétaire du lobby) publie l'état de l'arène ; l'hôte n'écoute pas ses propres messages.
+    // Only the host (lobby owner) publishes the arena state; the host ignores its own messages.
     private static void HandleArena(CSteamID sender, string text)
     {
         if (!ArenaCodec.TryDecode(text, out var wire, out var error))
         {
-            CombatModesPlugin.Log.LogWarning($"Message arène rejeté ({error})");
+            CombatModesPlugin.Log.LogWarning($"Arena message rejected ({error})");
             return;
         }
         if (CombatSession.IsHost || SteamMatchmaking.GetLobbyOwner(CombatSession.LobbyId) != sender) return;
@@ -71,7 +71,7 @@ internal sealed class CombatChannel : MonoBehaviour
         if (!MessagePolicy.IsAccepted(message.Kind, senderIsOwner, CombatSession.IsHost))
         {
             if (sender != SteamUser.GetSteamID())
-                CombatModesPlugin.Log.LogWarning($"Message {message.Kind} refusé de {sender.m_SteamID}");
+                CombatModesPlugin.Log.LogWarning($"Message {message.Kind} refused from {sender.m_SteamID}");
             return;
         }
         if (message.State is WireState state) CombatSession.SetDisplay(state, Time.time);

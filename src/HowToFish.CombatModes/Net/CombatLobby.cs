@@ -50,7 +50,7 @@ internal sealed class CombatLobby : MonoBehaviour
         SaveManager.OnServerLoaded();
         SaveManager.CreateServer(CombatSession.SaveName, useSteam: true, isPublic: isPublic, Difficulty.Default);
         SteamManager.CreateLobby();
-        CombatModesPlugin.Log.LogInfo($"Création d'un salon {GameModes.Tag(mode)} (public={isPublic})");
+        CombatModesPlugin.Log.LogInfo($"Creating {GameModes.Tag(mode)} lobby (public={isPublic})");
     }
 
     public void StartQuickMatch(GameMode mode)
@@ -87,7 +87,7 @@ internal sealed class CombatLobby : MonoBehaviour
         CombatSession.EnterDuelLobby(lobby, isHost: true, mode);
         if (Instance != null) Instance._quickMatchLobby = isPublic ? lobby : CSteamID.Nil;
         if (!isPublic) SteamFriends.ActivateGameOverlayInviteDialog(lobby);
-        CombatModesPlugin.Log.LogInfo($"Salon {GameModes.Tag(mode)} {lobby.m_SteamID} prêt");
+        CombatModesPlugin.Log.LogInfo($"Lobby {GameModes.Tag(mode)} {lobby.m_SteamID} ready");
     }
 
     public static CSteamID Opponent()
@@ -112,12 +112,12 @@ internal sealed class CombatLobby : MonoBehaviour
         if (!CombatSession.IsSearching) return;
         if (ioFailure || result.m_nLobbiesMatching == 0)
         {
-            CombatModesPlugin.Log.LogInfo("Aucun salon ouvert trouvé, création d'un salon public");
+            CombatModesPlugin.Log.LogInfo("No open lobby found, creating a public lobby");
             Host(CombatSession.Mode, isPublic: true);
             return;
         }
         var lobby = SteamMatchmaking.GetLobbyByIndex(0);
-        CombatModesPlugin.Log.LogInfo($"Salon trouvé : {lobby.m_SteamID}");
+        CombatModesPlugin.Log.LogInfo($"Lobby found: {lobby.m_SteamID}");
         SteamManager.JoinLobby(lobby.m_SteamID);
     }
 
@@ -140,7 +140,7 @@ internal sealed class CombatLobby : MonoBehaviour
         }
         bool arena = CombatSession.Mode != GameMode.Duel;
         if (QuickMatchPolicy.MergeTarget(CombatSession.LobbyId.m_SteamID, open, arena) is not ulong target) return;
-        CombatModesPlugin.Log.LogInfo($"Autre salon en attente trouvé ({target}), on le rejoint");
+        CombatModesPlugin.Log.LogInfo($"Found another waiting lobby ({target}), joining it");
         StartCoroutine(MoveTo(target, CombatSession.Mode));
     }
 
@@ -162,7 +162,7 @@ internal sealed class CombatLobby : MonoBehaviour
         CombatChannel.Send(DuelMessage.Hello());
     }
 
-    // Renvoi du HELLO tant que l'hôte ne nous a pas pris en compte : un seul envoi peut arriver avant qu'il soit prêt.
+    // Resend HELLO until the host acknowledges us: a single send can arrive before it is ready.
     private static bool NeedsHello()
     {
         if (CombatSession.Mode == GameMode.Duel)

@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace HowToFish.CombatModes.Ui.Native;
 
-// Tant que la touche du journal (action "PlayerTab") est maintenue : la réassignation de touche du joueur est respectée.
+// While the journal key (action "PlayerTab") is held: the player's key rebinding is respected.
 internal sealed class ScoreboardScreen : NativeScreen
 {
     private const float RowHeight = 40f;

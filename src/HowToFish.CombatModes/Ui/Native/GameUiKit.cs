@@ -8,7 +8,7 @@ using UnityEngine.UI;
 
 namespace HowToFish.CombatModes.Ui.Native;
 
-// Modèles pris dans l'interface du jeu : nos écrans en sont des clones, ils héritent police, sons et animations.
+// Templates taken from the game UI: our screens are clones, so they inherit font, sounds and animations.
 internal static class GameUiKit
 {
     private const string TemplateMethod = "QuitButton";
@@ -48,13 +48,13 @@ internal static class GameUiKit
         }
         catch (Exception ex)
         {
-            CombatModesPlugin.Log.LogError($"Lecture de l'interface du jeu impossible : {ex}");
+            CombatModesPlugin.Log.LogError($"Could not read the game UI : {ex}");
         }
         bool ok = _button != null && _text != null;
         if (!ok && !_warned)
         {
             _warned = true;
-            CombatModesPlugin.Log.LogWarning("Modèles d'interface du jeu introuvables, affichage de secours (IMGUI)");
+            CombatModesPlugin.Log.LogWarning("Game UI templates not found, using fallback display (IMGUI)");
         }
         return ok;
     }
@@ -78,7 +78,7 @@ internal static class GameUiKit
             var holder = pause != null ? PauseHolderOf(pause) : null;
             if (holder != null) _panel = LargestSpriteImage(holder);
         }
-        var summary = $"Interface du jeu : bouton={(_button != null)}, texte={(_text != null)}, panneau={(_panel != null)}, menu={(_menuPanels != null)}";
+        var summary = $"Game UI: button={(_button != null)}, text={(_text != null)}, panel={(_panel != null)}, menu={(_menuPanels != null)}";
         if (summary == _lastSummary) return;
         _lastSummary = summary;
         CombatModesPlugin.Log.LogInfo(summary);
@@ -148,7 +148,7 @@ internal static class GameUiKit
         layout.childControlHeight = true;
         layout.childForceExpandWidth = true;
         layout.childForceExpandHeight = false;
-        // La hauteur demandée n'est qu'un point de départ : le panneau grandit avec son contenu.
+        // The requested height is only a starting point: the panel grows with its content.
         go.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
         return image;
     }

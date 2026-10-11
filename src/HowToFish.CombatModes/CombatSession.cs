@@ -75,7 +75,7 @@ internal static class CombatSession
 
     public static void SetSearching(bool searching) => IsSearching = searching;
 
-    // Réglages invalides : le salon reste fermé même quand un membre part.
+    // Invalid settings: the lobby stays closed even when a member leaves.
     public static void LockLobby() => IsLobbyLocked = true;
 
     public static void SetDisplay(WireState state, float receivedAt)

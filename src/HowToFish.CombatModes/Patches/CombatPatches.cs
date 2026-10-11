@@ -18,14 +18,14 @@ internal static class BlockDamageOutsideFightPatch
     }
 }
 
-// Les accessoires tirés au hasard ne doivent pas débloquer le succès « tous les accessoires ».
+// Randomly rolled attachments must not unlock the "all attachments" achievement.
 [HarmonyPatch(typeof(AchievementManager), nameof(AchievementManager.CheckAttachmentsAchievement))]
 internal static class NoAttachmentAchievementInDuelPatch
 {
     private static bool Prefix() => !CombatSession.IsDuelLobby;
 }
 
-// Logique serveur du ServerRpc HitPlayer : seul endroit où le jeu connaît l'attaquant (__5).
+// Server logic of the HitPlayer ServerRpc: the only place where the game knows the attacker (__5).
 [HarmonyPatch(typeof(Server), "RpcLogic___HitPlayer___2449261505")]
 internal static class TrackHitsPatch
 {

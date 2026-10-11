@@ -8,7 +8,7 @@ namespace HowToFish.CombatModes.Patches;
 [HarmonyPatch(typeof(SteamManager), nameof(SteamManager.CreateLobby))]
 internal static class CreateDuelLobbyPatch
 {
-    // Le nom de sauvegarde évite qu'un PendingLobbyType resté en plan transforme une partie normale en duel.
+    // The save name prevents a stale PendingLobbyType from turning a normal game into a duel.
     private static bool Prefix()
     {
         if (CombatSession.PendingLobbyType is not ELobbyType type) return true;
@@ -30,7 +30,7 @@ internal static class TagDuelLobbyPatch
         if (CombatSession.PendingLobbyType is null) return;
         if (callback.m_eResult != EResult.k_EResultOK)
         {
-            CombatModesPlugin.Log.LogError($"Création du lobby duel refusée par Steam : {callback.m_eResult}");
+            CombatModesPlugin.Log.LogError($"Duel lobby creation refused by Steam : {callback.m_eResult}");
             CombatSession.Reset();
             CombatSession.ShowNotice(Ui.Lang.Text.SteamRefusedLobby, UnityEngine.Time.time);
             return;
@@ -54,7 +54,7 @@ internal static class LeaveDuelLobbyPatch
         }
         catch (System.Exception ex)
         {
-            CombatModesPlugin.Log.LogWarning($"Suppression de la sauvegarde duel impossible : {ex.Message}");
+            CombatModesPlugin.Log.LogWarning($"Could not delete duel save : {ex.Message}");
         }
     }
 }

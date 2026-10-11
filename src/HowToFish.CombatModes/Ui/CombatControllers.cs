@@ -24,7 +24,7 @@ internal sealed class CombatControllers : MonoBehaviour
         TrackLoadout(screen);
     }
 
-    // Le jeu reverrouille le curseur (retour de focus, fin de pause) : on le relibère tant qu'il doit l'être.
+    // The game relocks the cursor (focus return, end of pause): unlock it again while it must stay free.
     private void KeepCursor(CombatScreen screen)
     {
         bool free = CombatUiRules.FreesCursor(screen);
@@ -37,8 +37,8 @@ internal sealed class CombatControllers : MonoBehaviour
         if (free && Cursor.lockState != CursorLockMode.None) PlayerCamera.ToggleMouse(true);
     }
 
-    // Les accessoires arrivent par SyncVar après l'arme : on remplit le chargeur pendant le compte à rebours
-    // et juste après chaque apparition en arène.
+    // Attachments arrive via SyncVar after the weapon: refill the magazine during the countdown
+    // and right after each arena spawn.
     private void TrackLoadout(CombatScreen screen)
     {
         bool alive = CombatUiState.LocalAlive;
@@ -58,7 +58,7 @@ internal sealed class CombatControllers : MonoBehaviour
         }
         catch (Exception ex)
         {
-            CombatModesPlugin.Log.LogError($"Lecture des accessoires impossible : {ex}");
+            CombatModesPlugin.Log.LogError($"Could not read attachments : {ex}");
         }
     }
 }

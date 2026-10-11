@@ -10,7 +10,7 @@ public sealed class CombatModesPlugin : BaseUnityPlugin
 {
     public const string PluginGuid = "htf.combatmodes";
     public const string PluginName = "Combat Modes";
-    public const string PluginVersion = "1.4.0";
+    public const string PluginVersion = "2.0.0";
 
     internal static ManualLogSource Log { get; private set; } = null!;
     internal static GameObject Root { get; private set; } = null!;
@@ -21,7 +21,7 @@ public sealed class CombatModesPlugin : BaseUnityPlugin
         var (settings, arena, debugKey) = ConfigBinder.Load(Config, Log);
         var compatible = CompatibilityCheck.Run(Log);
         Ui.Native.GameUiKit.ForceFallback =
-            Config.Bind("Debug", "ForceImguiFallback", false, "Affiche l'ancienne interface IMGUI (diagnostic)").Value;
+            Config.Bind("Debug", "ForceImguiFallback", false, "Show the legacy IMGUI interface (diagnostics)").Value;
         CombatSession.Initialize(settings, arena, debugKey, compatible);
 
         Root = new GameObject("HowToFish.CombatModes");
@@ -51,6 +51,6 @@ public sealed class CombatModesPlugin : BaseUnityPlugin
         {
             menu.InjectButton();
         }
-        Log.LogInfo($"{PluginName} {PluginVersion} chargé (compatible={compatible}, kits={settings.Kits.Count})");
+        Log.LogInfo($"{PluginName} {PluginVersion} loaded (compatible={compatible}, kits={settings.Kits.Count})");
     }
 }

@@ -19,7 +19,7 @@ public sealed record DuelSettings(
     public const double StateBroadcastSeconds = 2.0;
     public const double HelloTimeoutSeconds = 5.0;
 
-    // Valeurs issues de docs/prototype-findings.md
+    // Values from docs/prototype-findings.md
     public const string DefaultKits = "pistol+knife;shotgun+knife;smg+knife;assaultrifle+knife;sniperrifle+pistol;bow+knife;knife";
     public const int DefaultIslandIndex = 0;
 
@@ -56,7 +56,7 @@ public sealed record DuelSettings(
     {
         var kits = KitParser.Parse(text, out var error);
         if (kits != null) return kits;
-        warnings.Add($"Kits invalides ({error}), kits par défaut utilisés");
+        warnings.Add($"Invalid Kits ({error}), using default kits");
         return KitParser.Parse(DefaultKits, out _)!;
     }
 
@@ -69,7 +69,7 @@ public sealed record DuelSettings(
         {
             return new Vector3(x, y, z);
         }
-        warnings.Add($"{name}='{text}' invalide (format attendu x,y,z), calcul automatique utilisé");
+        warnings.Add($"{name}='{text}' invalid (expected format x,y,z), using automatic calculation");
         return null;
     }
 

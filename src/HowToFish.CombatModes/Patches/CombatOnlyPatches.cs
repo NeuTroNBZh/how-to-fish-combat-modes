@@ -6,21 +6,21 @@ using UnityEngine;
 
 namespace HowToFish.CombatModes.Patches;
 
-// Respawn du jeu (maintenir le clic à la mort) : il vide l'inventaire au sol et contourne nos réapparitions.
+// Game respawn (hold click on death): it drops the inventory and bypasses our respawns.
 [HarmonyPatch(typeof(Server), "RpcLogic___RespawnPlayer___2210451296")]
 internal static class BlockGameRespawnPatch
 {
     private static bool Prefix() => !CombatUiRules.BlocksGameRespawn(CombatSession.IsDuelLobby);
 }
 
-// Réanimation d'un corps par un autre joueur : interdite en combat.
+// Reviving a body by another player: forbidden in combat.
 [HarmonyPatch(typeof(Server), "RpcLogic___ResurrectPlayer___2247010027")]
 internal static class BlockCorpseResurrectionPatch
 {
     private static bool Prefix() => !CombatUiRules.BlocksGameRespawn(CombatSession.IsDuelLobby);
 }
 
-// Côté joueur : le clic maintenu ne remplit plus la jauge de réapparition.
+// Player side: holding click no longer fills the respawn gauge.
 [HarmonyPatch(typeof(PlayerDying), "MouseClick")]
 internal static class BlockGiveUpClickPatch
 {
@@ -33,7 +33,7 @@ internal static class HideRespawnHintsPatch
     private static readonly string[] HintFields = { "_friendsHelpText", "_giveUpMask", "_giveUpEvent", "_giveUpHolderEvent" };
     private static readonly HashSet<GameObject> Hidden = new();
 
-    // On ne réaffiche hors combat que ce que l'on a masqué, sans toucher aux choix du jeu.
+    // Outside combat, only re-show what we hid, without touching the game's own choices.
     private static void Postfix(DeathUI __instance, bool to)
     {
         if (!to) return;

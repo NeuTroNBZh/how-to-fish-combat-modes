@@ -13,7 +13,7 @@ public sealed record Loadout(int Sight, int Barrel, int Bullet, int Quiver, bool
 
 public static class UpgradeRoller
 {
-    // Index 0 = accessoire d'origine : une arme nue fait partie des tirages possibles.
+    // Index 0 = original attachment: a bare weapon is among the possible rolls.
     public static Loadout Roll(WeaponOptions options, IRandomSource random) => new(
         Level(options.Sights, random),
         Level(options.Barrels, random),

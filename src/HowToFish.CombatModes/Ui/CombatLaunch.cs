@@ -11,7 +11,7 @@ internal static class CombatLaunch
     {
         if (CombatLobby.Instance == null)
         {
-            CombatModesPlugin.Log.LogError("CombatLobby absent");
+            CombatModesPlugin.Log.LogError("CombatLobby missing");
             return false;
         }
         if (!Validate(mode, out var error))

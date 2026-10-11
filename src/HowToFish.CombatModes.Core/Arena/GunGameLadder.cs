@@ -26,7 +26,7 @@ public sealed record GunGameLadder(IReadOnlyList<string> Weapons)
         return Validate(Weapons.Where(exists).ToList(), out _);
     }
 
-    // Avant le dernier niveau on garde le couteau en arme secondaire : sinon l'humiliation serait impossible.
+    // Before the last level the knife is kept as a secondary weapon: otherwise the humiliation kill would be impossible.
     public Kit KitAt(int level)
     {
         var clamped = Math.Max(0, Math.Min(level, LastLevel));
@@ -39,12 +39,12 @@ public sealed record GunGameLadder(IReadOnlyList<string> Weapons)
     {
         if (weapons.Count < MinLevels)
         {
-            error = $"au moins {MinLevels} niveaux requis";
+            error = $"at least {MinLevels} levels required";
             return null;
         }
         if (weapons[weapons.Count - 1] != FinalWeapon)
         {
-            error = $"le dernier niveau doit être {FinalWeapon}";
+            error = $"the last level must be {FinalWeapon}";
             return null;
         }
         error = "";

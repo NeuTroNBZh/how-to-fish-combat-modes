@@ -3,7 +3,7 @@ using HowToFish.CombatModes.Core;
 
 namespace HowToFish.CombatModes.Host;
 
-// Un tirage par nom d'arme : tous les joueurs reçoivent exactement les mêmes accessoires.
+// One roll per weapon name: all players get exactly the same attachments.
 internal sealed class LoadoutCache
 {
     private readonly Dictionary<string, Loadout> _loadouts = new();
@@ -17,7 +17,7 @@ internal sealed class LoadoutCache
         {
             loadout = UpgradeRoller.Roll(WeaponUpgrades.ReadOptions(item), _random);
             _loadouts[itemName] = loadout;
-            CombatModesPlugin.Log.LogInfo($"Accessoires {itemName} : {loadout}");
+            CombatModesPlugin.Log.LogInfo($"Attachments {itemName} : {loadout}");
         }
         WeaponUpgrades.Apply(item, loadout);
     }

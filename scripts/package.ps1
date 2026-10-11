@@ -1,4 +1,4 @@
-# Construit dist/HowToFish-CombatModes-<version>.zip : BepInEx + le mod, à extraire dans le dossier du jeu.
+# Builds dist/HowToFish-CombatModes-<version>.zip: BepInEx + the mod, to extract into the game folder.
 param(
     [string]$GameDir = 'E:\SteamLibrary\steamapps\common\How to Fish\How to Fish'
 )
@@ -7,7 +7,7 @@ $root = Split-Path $PSScriptRoot -Parent
 $version = (Select-String -Path "$root\src\HowToFish.CombatModes\CombatModesPlugin.cs" -Pattern 'PluginVersion = "(.+)"').Matches[0].Groups[1].Value
 
 dotnet build "$root\HowToFish.CombatModes.slnx" -c Release | Out-Null
-if ($LASTEXITCODE -ne 0) { throw 'Build en échec' }
+if ($LASTEXITCODE -ne 0) { throw 'Build failed' }
 
 $staging = "$root\dist\staging"
 if (Test-Path $staging) { Remove-Item $staging -Recurse -Force }
@@ -18,7 +18,7 @@ foreach ($file in '.doorstop_version', 'doorstop_config.ini', 'winhttp.dll', 'ch
 }
 Copy-Item "$GameDir\BepInEx\core" "$staging\BepInEx\core" -Recurse
 Copy-Item "$GameDir\BepInEx\plugins\HowToFish.CombatModes" "$staging\BepInEx\plugins\HowToFish.CombatModes" -Recurse
-Copy-Item "$root\docs\LISEZMOI-ami.txt" "$staging\LISEZMOI-Duel1v1.txt"
+Copy-Item "$root\docs\INSTALL.txt" "$staging\INSTALL.txt"
 
 $zip = "$root\dist\HowToFish-CombatModes-$version.zip"
 if (Test-Path $zip) { Remove-Item $zip -Force }

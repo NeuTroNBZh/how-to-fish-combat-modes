@@ -7,7 +7,7 @@ namespace HowToFish.CombatModes.Ui;
 
 internal static class CombatActions
 {
-    // Lancer (salon d'arène), Rejouer (fin d'arène) et Revanche (fin de duel) passent tous par ici.
+    // Start (arena lobby), Play again (arena end) and Rematch (duel end) all go through here.
     public static void Replay()
     {
         if (!CombatUiState.IsDuel)

@@ -6,7 +6,7 @@ namespace HowToFish.CombatModes.Host;
 
 internal static class Preflight
 {
-    // Partagé par le menu (avant de créer le lobby) et par l'hôte (filet de sécurité en jeu).
+    // Shared by the menu (before creating the lobby) and the host (in-game safety net).
     public static bool TryValidate(DuelSettings settings, out DuelSettings validated, out string error)
     {
         validated = settings;
@@ -16,14 +16,14 @@ internal static class Preflight
         return true;
     }
 
-    // La course à l'armement n'utilise pas les kits du duel : des kits invalides ne la bloquent pas.
+    // Gun game does not use duel kits: invalid kits do not block it.
     public static bool TryValidateArena(
         ArenaSettings arena, DuelSettings duel, GameMode mode, out ArenaSettings validated, out string error)
     {
         validated = arena;
         if (!TryKits(duel, out var kits, out error) && mode != GameMode.GunGame) return false;
         var ladder = arena.Ladder.KeepAvailable(GameActions.ItemExists, out var missing);
-        foreach (var item in missing) CombatModesPlugin.Log.LogWarning($"Arme de l'échelle inconnue, retirée : {item}");
+        foreach (var item in missing) CombatModesPlugin.Log.LogWarning($"Unknown ladder weapon, removed : {item}");
         if (ladder == null)
         {
             error = Ui.Lang.Text.InvalidLadder;
@@ -39,7 +39,7 @@ internal static class Preflight
     private static bool TryKits(DuelSettings settings, out IReadOnlyList<Kit> kits, out string error)
     {
         kits = KitFilter.KeepAvailable(settings.Kits, GameActions.ItemExists, out var missing);
-        foreach (var item in missing) CombatModesPlugin.Log.LogWarning($"Objet de kit inconnu, kit ignoré : {item}");
+        foreach (var item in missing) CombatModesPlugin.Log.LogWarning($"Unknown kit item, kit ignored : {item}");
         if (kits.Count > 0)
         {
             error = "";
@@ -55,7 +55,7 @@ internal static class Preflight
         var island = settings.IslandIndex;
         if (!GameActions.IsMainIsland(island))
         {
-            CombatModesPlugin.Log.LogWarning($"IslandIndex={island} n'est pas une île principale, île {DuelSettings.DefaultIslandIndex} utilisée");
+            CombatModesPlugin.Log.LogWarning($"IslandIndex={island} is not a main island, using island {DuelSettings.DefaultIslandIndex}");
             island = DuelSettings.DefaultIslandIndex;
         }
         return (island, settings.IslandRotation ? GameActions.MainIslands() : new[] { island });

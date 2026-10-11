@@ -35,12 +35,12 @@ internal sealed class MainMenuButton : MonoBehaviour
             .FirstOrDefault(b => b.gameObject.scene.IsValid() && GameUiKit.CallsMethod(b, TemplateMethod));
         if (template == null)
         {
-            CombatModesPlugin.Log.LogWarning("Bouton Quitter introuvable, bouton de secours (IMGUI)");
+            CombatModesPlugin.Log.LogWarning("Quit button not found, using fallback button (IMGUI)");
             _useFallbackButton = true;
             yield break;
         }
         _button = CloneButton(template);
-        CombatModesPlugin.Log.LogInfo($"Bouton {Lang.Text.CombatModes} ajouté au menu ({template.transform.parent.name})");
+        CombatModesPlugin.Log.LogInfo($"{Lang.Text.CombatModes} added to menu ({template.transform.parent.name})");
     }
 
     private GameObject CloneButton(Button template)
@@ -60,7 +60,7 @@ internal sealed class MainMenuButton : MonoBehaviour
         return clone;
     }
 
-    // Menu natif si l'interface du jeu est disponible, sinon le panneau IMGUI de secours.
+    // Native menu if the game UI is available, otherwise the IMGUI fallback panel.
     private void OnButton()
     {
         if (CombatMenuScreen.Instance != null && CombatMenuScreen.Instance.TryOpen()) return;
