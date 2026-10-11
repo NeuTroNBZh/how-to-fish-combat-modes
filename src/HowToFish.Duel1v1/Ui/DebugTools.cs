@@ -1,4 +1,5 @@
 using System;
+using HowToFish.Duel1v1.Arena;
 using HowToFish.Duel1v1.Host;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -26,7 +27,12 @@ internal sealed class DebugTools : MonoBehaviour
             DuelPlugin.Log.LogInfo($"Position : {text}");
             DuelSession.ShowNotice($"Position : {text}", Time.time);
         }
-        if (DuelSession.Settings.DebugSolo && keyboard.f10Key.wasPressedThisFrame)
-            DuelHost.Instance?.SimulateGuestDeath();
+        if (!DuelSession.Settings.DebugSolo) return;
+        if (keyboard.f10Key.wasPressedThisFrame)
+        {
+            if (DuelSession.IsHostingArena) ArenaHost.Instance?.KillBot();
+            else DuelHost.Instance?.SimulateGuestDeath();
+        }
+        if (keyboard.f11Key.wasPressedThisFrame && DuelSession.IsHostingArena) ArenaHost.Instance?.AddBot();
     }
 }
