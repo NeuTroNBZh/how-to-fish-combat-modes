@@ -43,6 +43,25 @@ public static class ArenaHudFormatter
         : winner == local ? "VICTOIRE"
         : $"{name(winner).ToUpperInvariant()} GAGNE";
 
+    // Bannière à afficher quand l'état du joueur local change pendant le combat (kill, mort, montée de niveau).
+    public static (string Text, BannerTone Tone)? BannerFor(ArenaWire? before, ArenaWire after, ulong local)
+    {
+        if (before == null || before.Phase != ArenaPhase.Playing || after.Phase != ArenaPhase.Playing) return null;
+        var was = before.Players.FirstOrDefault(p => p.SteamId == local);
+        var now = after.Players.FirstOrDefault(p => p.SteamId == local);
+        if (was == null || now == null) return null;
+        if (was.Alive && !now.Alive) return ("ÉLIMINÉ", BannerTone.Bad);
+        if (after.Mode == GameMode.GunGame && now.Level > was.Level && after.Ladder.Count > 0) return (LevelUpText(after.Ladder, now.Level), BannerTone.Good);
+        if (now.Kills > was.Kills) return ("KILL", BannerTone.Good);
+        return null;
+    }
+
+    private static string LevelUpText(IReadOnlyList<string> ladder, int level)
+    {
+        int last = ladder.Count - 1;
+        return level >= last ? "NIVEAU FINAL : couteau" : $"NIVEAU {level + 1} : {ladder[level]}";
+    }
+
     private static string Score(ArenaWirePlayer p, GameMode mode) =>
         mode == GameMode.GunGame ? $"niveau {p.Level + 1}" : p.Kills.ToString();
 }
