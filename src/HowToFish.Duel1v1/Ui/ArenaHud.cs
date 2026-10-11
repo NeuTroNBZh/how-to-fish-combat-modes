@@ -17,11 +17,16 @@ internal sealed class ArenaHud : MonoBehaviour
 
     private static ulong LocalId => SteamUser.GetSteamID().m_SteamID;
 
+    // Le jeu reverrouille le curseur (retour de focus, fin de pause, clic) : on le relibère tant qu'il doit l'être.
     private void Update()
     {
         var phase = DuelSession.IsArenaLobby ? DuelSession.ArenaDisplay?.Phase : null;
         bool free = phase is ArenaPhase.Lobby or ArenaPhase.Ended;
-        if (free == _cursorFreed) return;
+        if (free == _cursorFreed)
+        {
+            if (free && Cursor.lockState != CursorLockMode.None) PlayerCamera.ToggleMouse(true);
+            return;
+        }
         _cursorFreed = free;
         PlayerCamera.ToggleMouse(free);
     }

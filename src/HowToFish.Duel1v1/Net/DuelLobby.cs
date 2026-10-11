@@ -132,9 +132,14 @@ internal sealed class DuelLobby : MonoBehaviour
 
     private void TryMerge(LobbyMatchList_t result)
     {
-        var open = new List<ulong>();
-        for (int i = 0; i < result.m_nLobbiesMatching; i++) open.Add(SteamMatchmaking.GetLobbyByIndex(i).m_SteamID);
-        if (QuickMatchPolicy.MergeTarget(DuelSession.LobbyId.m_SteamID, open) is not ulong target) return;
+        var open = new List<OpenLobby>();
+        for (int i = 0; i < result.m_nLobbiesMatching; i++)
+        {
+            var lobby = SteamMatchmaking.GetLobbyByIndex(i);
+            open.Add(new OpenLobby(lobby.m_SteamID, SteamMatchmaking.GetNumLobbyMembers(lobby)));
+        }
+        bool arena = DuelSession.Mode != GameMode.Duel;
+        if (QuickMatchPolicy.MergeTarget(DuelSession.LobbyId.m_SteamID, open, arena) is not ulong target) return;
         DuelPlugin.Log.LogInfo($"Autre salon en attente trouvé ({target}), on le rejoint");
         StartCoroutine(MoveTo(target, DuelSession.Mode));
     }

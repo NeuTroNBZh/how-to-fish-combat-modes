@@ -38,7 +38,11 @@ internal sealed class DuelHud : MonoBehaviour
     {
         TrackPhase();
         bool matchEnd = DuelSession.IsDuelLobby && DuelSession.Mode == GameMode.Duel && DuelSession.Display?.Phase == DuelPhase.MatchEnd;
-        if (matchEnd == _cursorFreed) return;
+        if (matchEnd == _cursorFreed)
+        {
+            if (matchEnd && Cursor.lockState != CursorLockMode.None) PlayerCamera.ToggleMouse(true);
+            return;
+        }
         _cursorFreed = matchEnd;
         PlayerCamera.ToggleMouse(matchEnd);
     }
