@@ -49,4 +49,13 @@ public class CombatUiRulesTests
         Assert.Equal(menuLike, CombatUiRules.FreesCursor(screen));
         Assert.Equal(menuLike, CombatUiRules.BlocksInputs(screen));
     }
+
+    [Fact]
+    public void GameRespawnAndServerButtons_DisabledOnlyInCombat()
+    {
+        Assert.True(CombatUiRules.BlocksGameRespawn(inCombatLobby: true));
+        Assert.False(CombatUiRules.BlocksGameRespawn(inCombatLobby: false));
+        Assert.True(CombatUiRules.HidesServerButtons(inCombatLobby: true));
+        Assert.False(CombatUiRules.HidesServerButtons(inCombatLobby: false));
+    }
 }

@@ -24,6 +24,8 @@ internal static class CompatibilityCheck
         (typeof(AchievementManager), "CheckAttachmentsAchievement"),
         (typeof(PlayerThinking), "ThinkingInput"), (typeof(Player), "get_BlockInputs"),
         (typeof(PauseManager), "PauseInput"),
+        (typeof(Server), "RpcLogic___RespawnPlayer___2210451296"), (typeof(Server), "RpcLogic___ResurrectPlayer___2247010027"),
+        (typeof(PlayerDying), "MouseClick"), (typeof(DeathUI), "ToggleDeathUI"), (typeof(PauseManager), "OnPause"),
         (typeof(Server), "RpcLogic___HitPlayer___2449261505"),
     };
 
@@ -32,6 +34,9 @@ internal static class CompatibilityCheck
         (typeof(PlayerDying), "_player"), (typeof(PlayerInventory), "_items"),
         (typeof(PlayerVitals), "_player"),
         (typeof(CanvasManager), "_allMainMenuButtons"), (typeof(PauseManager), "_pauseHolder"),
+        (typeof(PauseManager), "_serverButtons"), (typeof(PauseManager), "_instance"),
+        (typeof(DeathUI), "_friendsHelpText"), (typeof(DeathUI), "_giveUpMask"), (typeof(DeathUI), "_giveUpEvent"),
+        (typeof(DeathUI), "_giveUpHolderEvent"),
         (typeof(Attachments), "_sights"), (typeof(Attachments), "_barrelAttachments"),
         (typeof(Attachments), "_bulletUpgrades"), (typeof(Attachments), "_quiverUpgrades"),
         (typeof(Attachments), "_extendedMagInfo"), (typeof(Attachments), "_laserSight"),

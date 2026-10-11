@@ -42,4 +42,10 @@ public static class CombatUiRules
     public static bool FreesCursor(CombatScreen screen) => screen is CombatScreen.Lobby or CombatScreen.End;
 
     public static bool BlocksInputs(CombatScreen screen) => FreesCursor(screen);
+
+    // Seul l'hôte du mode fait réapparaître les joueurs : le respawn du jeu jette le kit au sol.
+    public static bool BlocksGameRespawn(bool inCombatLobby) => inCombatLobby;
+
+    // Sauvegarde et réglages du serveur n'ont pas de sens dans une partie de combat temporaire.
+    public static bool HidesServerButtons(bool inCombatLobby) => inCombatLobby;
 }
