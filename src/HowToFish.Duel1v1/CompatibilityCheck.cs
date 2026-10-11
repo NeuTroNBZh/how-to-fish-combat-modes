@@ -30,6 +30,7 @@ internal static class CompatibilityCheck
     {
         (typeof(PlayerDying), "_player"), (typeof(PlayerInventory), "_items"),
         (typeof(PlayerVitals), "_player"),
+        (typeof(CanvasManager), "_allMainMenuButtons"), (typeof(PauseManager), "_pauseHolder"),
         (typeof(Attachments), "_sights"), (typeof(Attachments), "_barrelAttachments"),
         (typeof(Attachments), "_bulletUpgrades"), (typeof(Attachments), "_quiverUpgrades"),
         (typeof(Attachments), "_extendedMagInfo"), (typeof(Attachments), "_laserSight"),

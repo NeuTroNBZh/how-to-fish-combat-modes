@@ -4,6 +4,8 @@ using HowToFish.Duel1v1.Net;
 using Steamworks;
 using UnityEngine;
 
+using HowToFish.Duel1v1.Ui.Native;
+
 namespace HowToFish.Duel1v1.Ui;
 
 internal sealed class DuelHud : MonoBehaviour
@@ -13,6 +15,7 @@ internal sealed class DuelHud : MonoBehaviour
 
     private void OnGUI()
     {
+        if (GameUiKit.HudReady) return;
         if (!DuelSession.IsDuelLobby || DuelSession.Mode != GameMode.Duel) return;
         EnsureStyles();
         var scale = Screen.height / ReferenceHeight;

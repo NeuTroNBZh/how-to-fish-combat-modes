@@ -20,6 +20,8 @@ public sealed class DuelPlugin : BaseUnityPlugin
         Log = Logger;
         var (settings, arena, debugKey) = DuelConfigBinder.Load(Config, Log);
         var compatible = CompatibilityCheck.Run(Log);
+        Ui.Native.GameUiKit.ForceFallback =
+            Config.Bind("Debug", "ForceImguiFallback", false, "Affiche l'ancienne interface IMGUI (diagnostic)").Value;
         DuelSession.Initialize(settings, arena, debugKey, compatible);
 
         Root = new GameObject("HowToFish.Duel1v1");

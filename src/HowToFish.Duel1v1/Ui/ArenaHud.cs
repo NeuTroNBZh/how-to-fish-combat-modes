@@ -7,6 +7,8 @@ using Steamworks;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+using HowToFish.Duel1v1.Ui.Native;
+
 namespace HowToFish.Duel1v1.Ui;
 
 internal sealed class ArenaHud : MonoBehaviour
@@ -18,6 +20,7 @@ internal sealed class ArenaHud : MonoBehaviour
 
     private void OnGUI()
     {
+        if (GameUiKit.HudReady) return;
         if (!DuelSession.IsArenaLobby) return;
         EnsureStyles();
         var scale = Screen.height / ReferenceHeight;
