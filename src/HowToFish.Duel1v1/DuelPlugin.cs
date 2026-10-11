@@ -29,6 +29,7 @@ public sealed class DuelPlugin : BaseUnityPlugin
         Root.hideFlags = HideFlags.HideAndDontSave;
 
         var menu = Root.AddComponent<Ui.DuelMenu>();
+        Root.AddComponent<Ui.Native.CombatMenuScreen>();
         if (compatible)
         {
             new Harmony(PluginGuid).PatchAll(typeof(DuelPlugin).Assembly);

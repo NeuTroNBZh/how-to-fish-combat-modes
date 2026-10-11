@@ -1,9 +1,8 @@
-using System;
 using System.Collections;
 using System.Linq;
 using HowToFish.Duel1v1.Core;
-using HowToFish.Duel1v1.Host;
 using HowToFish.Duel1v1.Net;
+using HowToFish.Duel1v1.Ui.Native;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -34,7 +33,7 @@ internal sealed class DuelMenu : MonoBehaviour
         yield return null;
         if (_button != null) yield break;
         var template = Resources.FindObjectsOfTypeAll<Button>()
-            .FirstOrDefault(b => b.gameObject.scene.IsValid() && CallsMethod(b, TemplateMethod));
+            .FirstOrDefault(b => b.gameObject.scene.IsValid() && GameUiKit.CallsMethod(b, TemplateMethod));
         if (template == null)
         {
             DuelPlugin.Log.LogWarning("Bouton Quitter introuvable, bouton de secours (IMGUI)");
@@ -43,13 +42,6 @@ internal sealed class DuelMenu : MonoBehaviour
         }
         _button = CloneButton(template);
         DuelPlugin.Log.LogInfo($"Bouton {ButtonLabel} ajouté au menu ({template.transform.parent.name})");
-    }
-
-    private static bool CallsMethod(Button button, string method)
-    {
-        for (int i = 0; i < button.onClick.GetPersistentEventCount(); i++)
-            if (button.onClick.GetPersistentMethodName(i) == method) return true;
-        return false;
     }
 
     private GameObject CloneButton(Button template)
@@ -64,9 +56,16 @@ internal sealed class DuelMenu : MonoBehaviour
         if (label != null) label.text = ButtonLabel;
         var button = clone.GetComponent<Button>();
         button.onClick = new Button.ButtonClickedEvent();
-        button.onClick.AddListener(Open);
+        button.onClick.AddListener(OnButton);
         button.interactable = DuelSession.IsCompatible;
         return clone;
+    }
+
+    // Menu natif si l'interface du jeu est disponible, sinon le panneau IMGUI de secours.
+    private void OnButton()
+    {
+        if (CombatMenuScreen.Instance != null && CombatMenuScreen.Instance.TryOpen()) return;
+        Open();
     }
 
     private void Open()
@@ -119,9 +118,16 @@ internal sealed class DuelMenu : MonoBehaviour
     {
         GUILayout.Label(GameModes.Label(mode));
         GUILayout.Space(6);
-        if (GUILayout.Button("Inviter des amis", GUILayout.Height(55))) Launch(mode, lobby => lobby.Host(mode, isPublic: false));
+        if (GUILayout.Button("Inviter des amis", GUILayout.Height(55))) AfterLaunch(CombatLaunch.Launch(mode, quickMatch: false));
         GUILayout.Space(10);
-        if (GUILayout.Button("Partie rapide", GUILayout.Height(55))) Launch(mode, lobby => lobby.StartQuickMatch(mode));
+        if (GUILayout.Button("Partie rapide", GUILayout.Height(55))) AfterLaunch(CombatLaunch.Launch(mode, quickMatch: true));
+    }
+
+    private void AfterLaunch(bool started)
+    {
+        if (!started || DuelSession.IsSearching) return;
+        _panelOpen = false;
+        _mode = null;
     }
 
     private static void DrawSearching()
@@ -131,25 +137,4 @@ internal sealed class DuelMenu : MonoBehaviour
         if (GUILayout.Button("Annuler", GUILayout.Height(40))) DuelLobby.Instance?.CancelSearch();
     }
 
-    private void Launch(GameMode mode, Action<DuelLobby> action)
-    {
-        if (DuelLobby.Instance == null)
-        {
-            DuelPlugin.Log.LogError("DuelLobby absent");
-            return;
-        }
-        if (!Validate(mode, out var error))
-        {
-            DuelSession.ShowNotice(error, Time.time);
-            return;
-        }
-        action(DuelLobby.Instance);
-        if (DuelSession.IsSearching) return;
-        _panelOpen = false;
-        _mode = null;
-    }
-
-    private static bool Validate(GameMode mode, out string error) => mode == GameMode.Duel
-        ? DuelPreflight.TryValidate(DuelSession.Settings, out _, out error)
-        : DuelPreflight.TryValidateArena(DuelSession.ArenaSettings, DuelSession.Settings, mode, out _, out error);
 }
